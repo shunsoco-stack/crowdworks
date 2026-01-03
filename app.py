@@ -17,7 +17,69 @@ from game.engine import (
 )
 
 
-st.set_page_config(page_title="Cashflow Steps", layout="wide")
+st.set_page_config(page_title="Cashflow Steps", page_icon="🎲", layout="wide")
+
+
+def _inject_css() -> None:
+    st.markdown(
+        """
+<style>
+  /* Hide Streamlit chrome */
+  #MainMenu { visibility: hidden; }
+  footer { visibility: hidden; }
+  header { visibility: hidden; }
+
+  /* App background */
+  .stApp {
+    background:
+      radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,.25), transparent 60%),
+      radial-gradient(900px 500px at 90% 20%, rgba(16,185,129,.15), transparent 55%),
+      radial-gradient(900px 700px at 60% 95%, rgba(59,130,246,.12), transparent 60%),
+      linear-gradient(180deg, #0B1220 0%, #070A12 100%);
+  }
+
+  /* Headline badge */
+  .cfs-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid rgba(229,231,235,.14);
+    border-radius: 999px;
+    background: rgba(17,27,46,.55);
+    color: rgba(229,231,235,.92);
+    font-size: 12px;
+    letter-spacing: .02em;
+  }
+
+  /* Card-ish containers */
+  div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 16px !important;
+    border: 1px solid rgba(229,231,235,.10) !important;
+    background: rgba(17,27,46,.45) !important;
+    box-shadow: 0 10px 24px rgba(0,0,0,.25) !important;
+  }
+
+  /* Metrics look like HUD */
+  div[data-testid="stMetric"] {
+    padding: 14px 14px 10px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(229,231,235,.10);
+    background: rgba(17,27,46,.55);
+  }
+  div[data-testid="stMetricLabel"] > div { opacity: .85; }
+
+  /* Buttons */
+  .stButton > button {
+    border-radius: 14px !important;
+    border: 1px solid rgba(229,231,235,.12) !important;
+    box-shadow: 0 8px 18px rgba(0,0,0,.18) !important;
+  }
+  .stButton > button[kind="primary"]{
+    border: none !important;
+  }
+</style>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 def _init_state() -> None:
@@ -53,8 +115,17 @@ def _download_save(game: GameState) -> None:
 
 
 _init_state()
+_inject_css()
 
-st.title("Cashflow Steps（初心者向けキャッシュフロー教育ゲーム）")
+st.markdown(
+    """
+<div style="display:flex; gap:10px; align-items:center; margin-bottom:6px;">
+  <div style="font-size:28px; font-weight:800;">Cashflow Steps</div>
+  <div class="cfs-badge">初心者向け / ソロ / 30分目安</div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 st.caption("毎月：収入/支出 → イベント → オファー購入。目標は「パッシブ収入 ≥ 固定費」。")
 
 with st.expander("遊び方（MVP）", expanded=False):
@@ -69,23 +140,19 @@ with st.expander("遊び方（MVP）", expanded=False):
 """
     )
 
-left, right = st.columns([0.38, 0.62], gap="large")
-
-with left:
-    st.subheader("ゲーム設定")
+with st.sidebar:
+    st.subheader("🎛 設定")
     roles = st.session_state.roles
     role_labels = {r["id"]: f'{r["name"]}（給与 {r["salary"]:,} / 固定費 {r["fixed_expenses"]:,}）' for r in roles}
-    role_id = st.selectbox("職業を選ぶ", options=list(role_labels.keys()), format_func=lambda x: role_labels[x])
-    seed_str = st.text_input("シード（空欄OK・同じシードで同じ展開）", value="")
+    role_id = st.selectbox("職業", options=list(role_labels.keys()), format_func=lambda x: role_labels[x])
+    seed_str = st.text_input("シード（空欄OK）", value="")
     seed = int(seed_str) if seed_str.strip().isdigit() else None
 
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("ゲーム開始 / リセット", type="primary", use_container_width=True):
-            _reset_game(role_id, seed)
-    with c2:
-        if st.button("セーブ読み込み（JSON貼り付け）", use_container_width=True):
-            st.session_state._show_load = True
+    if st.button("ゲーム開始 / リセット", type="primary", use_container_width=True):
+        _reset_game(role_id, seed)
+
+    if st.button("セーブ読み込み（JSON）", use_container_width=True):
+        st.session_state._show_load = True
 
     if st.session_state.get("_show_load", False):
         raw = st.text_area("ここにセーブJSONを貼り付け", height=160)
@@ -99,15 +166,13 @@ with left:
                 st.error(f"読み込みに失敗しました: {e}")
 
     st.divider()
-    st.subheader("データの編集")
-    st.markdown("- `data/roles.json`, `data/offers.json`, `data/events.json` を編集できます。")
+    st.caption("データ編集：`data/roles.json`, `data/offers.json`, `data/events.json`")
 
 
-with right:
-    game: GameState | None = st.session_state.game
-    if game is None:
-        st.info("左で職業を選んで「ゲーム開始 / リセット」を押してください。")
-        st.stop()
+game: GameState | None = st.session_state.game
+if game is None:
+    st.info("左のサイドバーで職業を選んで「ゲーム開始 / リセット」を押してください。")
+    st.stop()
 
     summary = summarize_state(game)
     k1, k2, k3, k4, k5 = st.columns(5)
@@ -118,6 +183,9 @@ with right:
     k5.metric("パッシブ収入（毎月）", f'{summary["passive_income"]:,}')
 
     st.caption(f'毎月の純キャッシュフロー: {summary["net_monthly"]:+,} / 純資産(目安): {summary["net_worth"]:+,}')
+    denom = max(1, summary["fixed_expenses"])
+    progress = max(0.0, min(1.0, summary["passive_income"] / denom))
+    st.progress(progress, text=f"クリアまで：パッシブ {summary['passive_income']:,} / 固定費 {summary['fixed_expenses']:,}")
 
     win = check_win(game)
     if win:
@@ -128,7 +196,7 @@ with right:
     st.divider()
 
     if not game.in_month:
-        st.subheader("月を進める")
+        st.subheader("▶ 月の開始")
         if st.button("今月を開始（収支計算 → イベント → オファー提示）", type="primary", use_container_width=True):
             process_month_start(game)
             event = draw_cards(game, deck="events", n=1)[0]
@@ -136,16 +204,17 @@ with right:
             apply_event(game, event)
             game.current_offers = draw_cards(game, deck="offers", n=2)
     else:
-        st.subheader("今月のイベント")
+        st.subheader("⚡ 今月のイベント")
         if game.current_event is None:
             st.warning("イベントが未設定です（想定外）。月をスキップして次に進めてください。")
         else:
             ev = game.current_event
-            st.markdown(f"**{ev.name}**")
-            st.write(ev.description)
-            st.caption(f'影響: {ev.effect_summary()}')
+            with st.container(border=True):
+                st.markdown(f"**{ev.name}**")
+                st.write(ev.description)
+                st.caption(f'影響: {ev.effect_summary()}')
 
-        st.subheader("今月のオファー（投資/副業/学習）")
+        st.subheader("🃏 今月のオファー（投資/副業/学習）")
         if not game.current_offers:
             st.info("オファーがありません。次の月へ進めてください。")
         else:
@@ -172,7 +241,7 @@ with right:
                         st.caption("※現金が足りない場合は購入できません。")
 
         st.divider()
-        st.subheader("次の月へ")
+        st.subheader("⏭ 次の月へ")
         st.caption("購入しなくてもOKです。月末処理はありません（MVP）。")
         if st.button("この月を終了して次の月へ", type="primary", use_container_width=True):
             game.in_month = False
