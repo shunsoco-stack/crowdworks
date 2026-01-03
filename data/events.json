@@ -1,0 +1,254 @@
+[
+  {
+    "id": "phone_break",
+    "name": "スマホ故障",
+    "description": "修理費がかかった。",
+    "cash_delta": -18000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "dental",
+    "name": "歯の治療",
+    "description": "早めに治しておくと後が楽。今月は出費。",
+    "cash_delta": -25000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "friend_wedding",
+    "name": "友人の結婚式",
+    "description": "ご祝儀で出費。でも人脈は大事。",
+    "cash_delta": -30000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "overtime",
+    "name": "残業が増えた",
+    "description": "今月からしばらく忙しい。給与が少し増える。",
+    "cash_delta": 0,
+    "salary_delta": 15000,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "evaluation_up",
+    "name": "評価アップ",
+    "description": "小さく昇給した。",
+    "cash_delta": 0,
+    "salary_delta": 12000,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "car_repair",
+    "name": "車の修理",
+    "description": "突然の修理費。持ちこたえられるか？",
+    "cash_delta": -60000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "rent_raise",
+    "name": "家賃が上がった",
+    "description": "更新で家賃が上がった。固定費増。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 8000,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "subscription_creep",
+    "name": "サブスク増えすぎ",
+    "description": "便利だけど、気づくと固定費が増えている。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 5000,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "insurance_review",
+    "name": "保険の見直しがうまくいった",
+    "description": "ムダを削って固定費を下げられた。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": -7000,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "gadget_buy",
+    "name": "ガジェット衝動買い",
+    "description": "テンションは上がった。財布は軽い。",
+    "cash_delta": -45000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "family_support",
+    "name": "家族のサポート",
+    "description": "急な出費が発生。",
+    "cash_delta": -50000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "health_good",
+    "name": "体調が良い月",
+    "description": "稼働が安定して、収入が少し増えた。",
+    "cash_delta": 0,
+    "salary_delta": 8000,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "cold",
+    "name": "風邪でダウン",
+    "description": "少し休むことに。収入が減る（MVPでは給与減）。",
+    "cash_delta": 0,
+    "salary_delta": -12000,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "course_refund",
+    "name": "講座の返金があった",
+    "description": "思ってたのと違って返金できた。現金が少し戻る。",
+    "cash_delta": 15000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "tax_notice",
+    "name": "税金の通知",
+    "description": "忘れたころに来る。今月は出費。",
+    "cash_delta": -35000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "freelance_small",
+    "name": "小さな副業案件が入った",
+    "description": "単発の収入。コツコツが効く。",
+    "cash_delta": 40000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "market_down",
+    "name": "相場が下がった",
+    "description": "資産の評価が下がる（MVPではパッシブが少し減る扱い）。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": -4000
+  },
+  {
+    "id": "market_up",
+    "name": "相場が上がった",
+    "description": "資産の調子が良い（MVPではパッシブが少し増える扱い）。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 5000
+  },
+  {
+    "id": "subscription_cancel",
+    "name": "不要なサブスク解約",
+    "description": "固定費を削れた。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": -4000,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "side_hustle_slump",
+    "name": "副業が停滞",
+    "description": "一時的に売上が落ちた。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": -6000
+  },
+  {
+    "id": "side_hustle_boost",
+    "name": "副業が伸びた",
+    "description": "継続が結果に。収入が増えた。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 9000
+  },
+  {
+    "id": "promotion",
+    "name": "昇進",
+    "description": "責任も増えたが給与も上がった。",
+    "cash_delta": 0,
+    "salary_delta": 30000,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "burnout",
+    "name": "燃え尽き",
+    "description": "無理しすぎた。しばらく収入が落ちる。",
+    "cash_delta": 0,
+    "salary_delta": -25000,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "move_house",
+    "name": "引っ越し",
+    "description": "まとまった費用がかかる。",
+    "cash_delta": -90000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "cheap_plan",
+    "name": "格安SIMに乗り換え",
+    "description": "固定費を下げられた。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": -3000,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "family_gift",
+    "name": "家族からの贈与",
+    "description": "助かった！現金が増える。",
+    "cash_delta": 60000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "refund_tax",
+    "name": "還付金が入った",
+    "description": "ちょっと嬉しい臨時収入。",
+    "cash_delta": 25000,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  },
+  {
+    "id": "scam_avoid",
+    "name": "詐欺を回避できた",
+    "description": "学びがあった。結果的に損せず済んだ（影響なし）。",
+    "cash_delta": 0,
+    "salary_delta": 0,
+    "fixed_expenses_delta": 0,
+    "passive_income_delta": 0
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "office_junior",
+    "name": "事務職（若手）",
+    "salary": 230000,
+    "fixed_expenses": 190000,
+    "starting_cash": 180000,
+    "starting_passive_income": 0,
+    "starting_net_worth": 0
+  },
+  {
+    "id": "sales_mid",
+    "name": "営業職（中堅）",
+    "salary": 320000,
+    "fixed_expenses": 260000,
+    "starting_cash": 250000,
+    "starting_passive_income": 0,
+    "starting_net_worth": 0
+  },
+  {
+    "id": "designer",
+    "name": "デザイナー",
+    "salary": 280000,
+    "fixed_expenses": 230000,
+    "starting_cash": 220000,
+    "starting_passive_income": 0,
+    "starting_net_worth": 0
+  },
+  {
+    "id": "therapist_employee",
+    "name": "サロン勤務セラピスト",
+    "salary": 260000,
+    "fixed_expenses": 210000,
+    "starting_cash": 160000,
+    "starting_passive_income": 0,
+    "starting_net_worth": 0
+  },
+  {
+    "id": "engineer",
+    "name": "エンジニア",
+    "salary": 380000,
+    "fixed_expenses": 280000,
+    "starting_cash": 320000,
+    "starting_passive_income": 0,
+    "starting_net_worth": 0
+  },
+  {
+    "id": "single_parent",
+    "name": "シングル（節約上手）",
+    "salary": 240000,
+    "fixed_expenses": 175000,
+    "starting_cash": 120000,
+    "starting_passive_income": 0,
+    "starting_net_worth": 0
+  }
+]
