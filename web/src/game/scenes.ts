@@ -184,6 +184,7 @@ export function createScenes(Phaser: PhaserNS) {
     private dragStartY = 0;
     private camStartY = 0;
     private contentHeight = 860;
+    private bottomBarH = 84;
 
     constructor() {
       super("Play");
@@ -272,6 +273,8 @@ export function createScenes(Phaser: PhaserNS) {
     private render() {
       const s = this.shared.state!;
       const { width, height } = this.scale;
+      const isNarrow = width < 860;
+      this.bottomBarH = isNarrow ? 92 : 84;
 
       const hudLeft = this.hud!.getByName("hud_left") as import("phaser").GameObjects.Text;
       const hudRight = this.hud!.getByName("hud_right") as import("phaser").GameObjects.Text;
@@ -301,16 +304,27 @@ export function createScenes(Phaser: PhaserNS) {
       g.fillRoundedRect(barX, barY, Math.max(6, barW * p), barH, 999);
       this.fixed!.add(g);
 
+      // Bottom action bar (fixed)
+      const bar = this.add.graphics();
+      const by = height - this.bottomBarH;
+      bar.fillStyle(0x0b1220, 0.72);
+      bar.fillRect(0, by, width, this.bottomBarH);
+      bar.lineStyle(1, 0x2a344a, 1);
+      bar.strokeLineShape(new Phaser.Geom.Line(0, by, width, by));
+      this.fixed!.add(bar);
+
       if (isWin(s)) {
         this.showWin();
         return;
       }
 
       if (!s.inMonth) {
-        this.msg.setText("▶ 今月を開始しよう（収支計算 → イベント → オファー）");
-        this.fixed!.add(
-          button(this, width / 2 - 170, height / 2 - 24, 340, 52, "今月を開始", () => this.startMonth(), "primary"),
-        );
+        this.msg.setText(isNarrow ? "▶ 今月を開始しよう" : "▶ 今月を開始しよう（収支計算 → イベント → オファー）");
+        // Start button sits above the bottom bar for better thumb reach on mobile.
+        const startW = isNarrow ? Math.min(380, width - 60) : 340;
+        const startX = (width - startW) / 2;
+        const startY = by - 70;
+        this.fixed!.add(button(this, startX, startY, startW, 52, "今月を開始", () => this.startMonth(), "primary"));
         return;
       }
 
@@ -328,27 +342,41 @@ export function createScenes(Phaser: PhaserNS) {
       this.center!.add(
         uiText(this, 40, 292, "🃏 オファー（どれか1つ買うか、スキップ）", 16, "rgba(229,231,235,.75)").setFontStyle("800"),
       );
-      const cardW = (width - 120) / 2;
-      const cardH = 250;
+      const cardH = isNarrow ? 232 : 250;
       const y = 320;
 
-      this.offerCard(offersNow[0], 40, y, cardW, cardH);
-      this.offerCard(offersNow[1], 80 + cardW, y, cardW, cardH);
+      if (isNarrow) {
+        const cardW = width - 80;
+        this.offerCard(offersNow[0], 40, y, cardW, cardH);
+        this.offerCard(offersNow[1], 40, y + cardH + 22, cardW, cardH);
+      } else {
+        const cardW = (width - 120) / 2;
+        this.offerCard(offersNow[0], 40, y, cardW, cardH);
+        this.offerCard(offersNow[1], 80 + cardW, y, cardW, cardH);
+      }
 
       // Bottom controls
       const net = netMonthly(s);
       const netColor = net >= 0 ? "rgba(16,185,129,.95)" : "rgba(239,68,68,.95)";
-      this.center!.add(
-        uiText(this, 40, y + cardH + 16, `今月の純キャッシュフロー：${net >= 0 ? "+" : ""}${fmt(net)}`, 16, netColor).setFontStyle("800"),
-      );
+      const netY = isNarrow ? y + cardH * 2 + 22 + 16 : y + cardH + 16;
+      this.center!.add(uiText(this, 40, netY, `今月の純キャッシュフロー：${net >= 0 ? "+" : ""}${fmt(net)}`, 16, netColor).setFontStyle("800"));
 
-      // These controls should stay on screen while scrolling
-      this.fixed!.add(button(this, width - 200, height - 70, 170, 44, "次の月へ", () => this.nextMonth(), "primary"));
-      this.fixed!.add(button(this, width - 390, height - 70, 170, 44, "スキップ", () => this.nextMonth(), "neutral"));
+      // These controls stay on screen inside the bottom bar
+      const btnH = 46;
+      const btnY = by + (this.bottomBarH - btnH) / 2;
+      const nextW = isNarrow ? 170 : 170;
+      const skipW = isNarrow ? 140 : 170;
+      const gap = 12;
+      const nextX = width - 24 - nextW;
+      const skipX = nextX - gap - skipW;
+      this.fixed!.add(button(this, nextX, btnY, nextW, btnH, "次の月へ", () => this.nextMonth(), "primary"));
+      this.fixed!.add(button(this, skipX, btnY, skipW, btnH, "スキップ", () => this.nextMonth(), "neutral"));
 
       // Update scroll bounds (content may exceed viewport on small screens)
       // Rough bottom of content: y + cardH + labels + padding
-      this.contentHeight = Math.max(860, y + cardH + 140);
+      const contentBottom = isNarrow ? y + cardH * 2 + 22 + 160 : y + cardH + 160;
+      // Add extra room so content can scroll above bottom bar (avoid being hidden behind fixed UI)
+      this.contentHeight = Math.max(860, contentBottom + this.bottomBarH + 24);
       const cam = this.cameras.main;
       cam.setBounds(0, 0, width, this.contentHeight);
       const maxScroll = Math.max(0, this.contentHeight - height);

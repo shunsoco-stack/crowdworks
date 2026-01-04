@@ -33,6 +33,7 @@ export default function GameCanvas() {
     };
   }, []);
 
-  return <div ref={hostRef} style={{ width: "100%", height: "78vh" }} />;
+  // Use svh to behave better on mobile address bars.
+  return <div ref={hostRef} style={{ width: "100%", height: "80svh", minHeight: 520 }} />;
 }
 
