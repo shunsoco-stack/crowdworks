@@ -88,13 +88,14 @@ export function createScenes(Phaser: PhaserNS) {
 
   class TitleScene extends Phaser.Scene {
     declare shared: Shared;
+    private bg?: import("phaser").GameObjects.Rectangle;
 
     constructor() {
       super("Title");
     }
 
     create() {
-      this.cameras.main.setBackgroundColor("#0b1220");
+      this.ensureSolidBg();
       this.shared = this.registry.get("shared") as Shared;
 
       const { width, height } = this.scale;
@@ -122,18 +123,33 @@ export function createScenes(Phaser: PhaserNS) {
         },
         "primary",
       );
+
+      this.scale.on("resize", () => this.ensureSolidBg());
+    }
+
+    private ensureSolidBg() {
+      const { width, height } = this.scale;
+      if (!this.bg) {
+        this.bg = this.add.rectangle(0, 0, width, height, 0x0b1220, 1);
+        this.bg.setOrigin(0, 0);
+        this.bg.setDepth(-10_000);
+        this.bg.setScrollFactor(0);
+      } else {
+        this.bg.setSize(width, height);
+      }
     }
   }
 
   class RoleScene extends Phaser.Scene {
     declare shared: Shared;
+    private bg?: import("phaser").GameObjects.Rectangle;
 
     constructor() {
       super("Role");
     }
 
     create() {
-      this.cameras.main.setBackgroundColor("#0b1220");
+      this.ensureSolidBg();
       this.shared = this.registry.get("shared") as Shared;
       const { width, height } = this.scale;
 
@@ -176,6 +192,20 @@ export function createScenes(Phaser: PhaserNS) {
       }
 
       button(this, 30, height - 70, 160, 44, "戻る", () => this.scene.start("Title"), "neutral");
+
+      this.scale.on("resize", () => this.ensureSolidBg());
+    }
+
+    private ensureSolidBg() {
+      const { width, height } = this.scale;
+      if (!this.bg) {
+        this.bg = this.add.rectangle(0, 0, width, height, 0x0b1220, 1);
+        this.bg.setOrigin(0, 0);
+        this.bg.setDepth(-10_000);
+        this.bg.setScrollFactor(0);
+      } else {
+        this.bg.setSize(width, height);
+      }
     }
   }
 
@@ -186,6 +216,7 @@ export function createScenes(Phaser: PhaserNS) {
     private fixed?: import("phaser").GameObjects.Container;
     private center?: import("phaser").GameObjects.Container;
     private msg?: import("phaser").GameObjects.Text;
+    private bg?: import("phaser").GameObjects.Rectangle;
     private scrollBound = false;
     private isDragging = false;
     private dragStartY = 0;
@@ -198,7 +229,7 @@ export function createScenes(Phaser: PhaserNS) {
     }
 
     create() {
-      this.cameras.main.setBackgroundColor("#0b1220");
+      this.ensureSolidBg();
       this.shared = this.registry.get("shared") as Shared;
       if (!this.shared.state) {
         this.scene.start("Role");
@@ -207,6 +238,20 @@ export function createScenes(Phaser: PhaserNS) {
       this.drawFrame();
       this.setupScrolling();
       this.render();
+
+      this.scale.on("resize", () => this.ensureSolidBg());
+    }
+
+    private ensureSolidBg() {
+      const { width, height } = this.scale;
+      if (!this.bg) {
+        this.bg = this.add.rectangle(0, 0, width, height, 0x0b1220, 1);
+        this.bg.setOrigin(0, 0);
+        this.bg.setDepth(-10_000);
+        this.bg.setScrollFactor(0);
+      } else {
+        this.bg.setSize(width, height);
+      }
     }
 
     private drawFrame() {
