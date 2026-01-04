@@ -174,6 +174,11 @@ export function createScenes(Phaser: PhaserNS) {
     private hud?: import("phaser").GameObjects.Container;
     private center?: import("phaser").GameObjects.Container;
     private msg?: import("phaser").GameObjects.Text;
+    private scrollBound = false;
+    private isDragging = false;
+    private dragStartY = 0;
+    private camStartY = 0;
+    private contentHeight = 860;
 
     constructor() {
       super("Play");
@@ -186,6 +191,7 @@ export function createScenes(Phaser: PhaserNS) {
         return;
       }
       this.drawFrame();
+      this.setupScrolling();
       this.render();
     }
 
@@ -200,6 +206,54 @@ export function createScenes(Phaser: PhaserNS) {
       pill(this, 20, 18, width - 40, 64);
       this.hud.add(uiText(this, 34, 34, "", 16, "rgba(229,231,235,.8)").setName("hud_left"));
       this.hud.add(uiText(this, width - 34, 34, "", 16, "rgba(229,231,235,.8)").setOrigin(1, 0).setName("hud_right"));
+      this.hud.setScrollFactor(0);
+    }
+
+    private setupScrolling() {
+      // Re-register once
+      if (this.scrollBound) return;
+      this.scrollBound = true;
+
+      const cam = this.cameras.main;
+      cam.setBounds(0, 0, this.scale.width, this.contentHeight);
+
+      // Mouse wheel scroll
+      this.input.on(
+        "wheel",
+        (
+          _pointer: import("phaser").Input.Pointer,
+          _gameObjects: unknown[],
+          _dx: number,
+          dy: number,
+        ) => {
+        const maxScroll = Math.max(0, this.contentHeight - this.scale.height);
+        cam.scrollY = Phaser.Math.Clamp(cam.scrollY + dy * 0.7, 0, maxScroll);
+        },
+      );
+
+      // Touch / drag scroll
+      this.input.on("pointerdown", (p: import("phaser").Input.Pointer) => {
+        this.isDragging = true;
+        this.dragStartY = p.y;
+        this.camStartY = cam.scrollY;
+      });
+      this.input.on("pointerup", () => {
+        this.isDragging = false;
+      });
+      this.input.on("pointermove", (p: import("phaser").Input.Pointer) => {
+        if (!this.isDragging) return;
+        const maxScroll = Math.max(0, this.contentHeight - this.scale.height);
+        const delta = this.dragStartY - p.y;
+        cam.scrollY = Phaser.Math.Clamp(this.camStartY + delta, 0, maxScroll);
+      });
+
+      // On resize, keep scroll bounds consistent
+      this.scale.on("resize", () => {
+        cam.setBounds(0, 0, this.scale.width, this.contentHeight);
+        const maxScroll = Math.max(0, this.contentHeight - this.scale.height);
+        cam.scrollY = Phaser.Math.Clamp(cam.scrollY, 0, maxScroll);
+        this.render();
+      });
     }
 
     private render() {
@@ -271,6 +325,11 @@ export function createScenes(Phaser: PhaserNS) {
       button(this, width - 200, height - 70, 170, 44, "次の月へ", () => this.nextMonth(), "primary");
       button(this, width - 390, height - 70, 170, 44, "スキップ", () => this.nextMonth(), "neutral");
       button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral");
+
+      // Update scroll bounds (content may exceed viewport on small screens)
+      // Rough bottom of content: y + cardH + labels + padding
+      this.contentHeight = Math.max(860, y + cardH + 140);
+      this.cameras.main.setBounds(0, 0, width, this.contentHeight);
     }
 
     private startMonth() {
