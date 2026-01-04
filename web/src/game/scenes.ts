@@ -58,11 +58,16 @@ export function createScenes(Phaser: PhaserNS) {
 
     const hit = scene.add.rectangle(w / 2, h / 2, w, h, 0xffffff, 0.0001);
     hit.setInteractive({ useHandCursor: true });
-    hit.on("pointerdown", (_p: import("phaser").Input.Pointer, _lx: number, _ly: number, ev: import("phaser").Types.Input.EventData) => {
+    hit.on(
+      "pointerdown",
+      (_p: import("phaser").Input.Pointer, _lx: number, _ly: number, ev: import("phaser").Types.Input.EventData) => {
       // Prevent the scene-level drag-scroll handler from also firing.
-      ev.stopPropagation();
+      // (Some environments may not pass EventData reliably.)
+      const maybe = ev as unknown as { stopPropagation?: () => void };
+      if (typeof maybe?.stopPropagation === "function") maybe.stopPropagation();
       onClick();
-    });
+      },
+    );
     hit.on("pointerover", () => scene.tweens.add({ targets: container, y: y - 1, duration: 80 }));
     hit.on("pointerout", () => scene.tweens.add({ targets: container, y, duration: 80 }));
 
@@ -249,7 +254,11 @@ export function createScenes(Phaser: PhaserNS) {
 
       // Touch / drag scroll
       this.input.on("pointerdown", (p: import("phaser").Input.Pointer) => {
-        // If a UI element handled the pointerdown, it stops propagation and we don't start drag-scrolling.
+        // Don't drag-scroll on the start screen (button interactions should feel stable).
+        if (!this.shared?.state?.inMonth) return;
+        // Don't start drag-scroll from the bottom action bar area.
+        if (p.y >= this.scale.height - this.bottomBarH) return;
+
         this.isDragging = true;
         this.dragStartY = p.y;
         this.camStartY = cam.scrollY;
@@ -437,7 +446,8 @@ export function createScenes(Phaser: PhaserNS) {
       hit.setInteractive({ useHandCursor: true });
       hit.on("pointerdown", (_p: import("phaser").Input.Pointer, _lx: number, _ly: number, ev: import("phaser").Types.Input.EventData) => {
         // Don't start drag-scrolling when clicking the card.
-        ev.stopPropagation();
+        const maybe = ev as unknown as { stopPropagation?: () => void };
+        if (typeof maybe?.stopPropagation === "function") maybe.stopPropagation();
         this.tweens.add({
           targets: c,
           scaleX: 0.98,
