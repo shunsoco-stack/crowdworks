@@ -7,7 +7,8 @@ export async function createGame(parent: HTMLElement): Promise<import("phaser").
   const config: import("phaser").Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent,
-    backgroundColor: "rgba(0,0,0,0)",
+    // Make the canvas opaque to avoid background "shadow" bleeding through.
+    backgroundColor: "#0b1220",
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
