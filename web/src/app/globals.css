@@ -1,0 +1,82 @@
+:root {
+  --bg0: #070a12;
+  --bg1: #0b1220;
+  --panel: rgba(17, 27, 46, 0.6);
+  --border: rgba(229, 231, 235, 0.12);
+  --text: rgba(229, 231, 235, 0.92);
+  --muted: rgba(229, 231, 235, 0.70);
+  --accent: #7c3aed;
+  --good: #10b981;
+  --bad: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(124, 58, 237, .25), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(16, 185, 129, .15), transparent 55%),
+    radial-gradient(900px 700px at 60% 95%, rgba(59, 130, 246, .12), transparent 60%),
+    linear-gradient(180deg, var(--bg1) 0%, var(--bg0) 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+}
+
+.shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+}
+
+.badge {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.frame {
+  padding: 0 20px 16px 20px;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  /* Opaque panel so the body gradients don't create "shadow" artifacts */
+  background: #0b1220;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.footer {
+  padding: 12px 20px 18px 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
