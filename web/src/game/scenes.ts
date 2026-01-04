@@ -58,7 +58,11 @@ export function createScenes(Phaser: PhaserNS) {
 
     const hit = scene.add.rectangle(w / 2, h / 2, w, h, 0xffffff, 0.0001);
     hit.setInteractive({ useHandCursor: true });
-    hit.on("pointerdown", () => onClick());
+    hit.on("pointerdown", (_p: import("phaser").Input.Pointer, _lx: number, _ly: number, ev: import("phaser").Types.Input.EventData) => {
+      // Prevent the scene-level drag-scroll handler from also firing.
+      ev.stopPropagation();
+      onClick();
+    });
     hit.on("pointerover", () => scene.tweens.add({ targets: container, y: y - 1, duration: 80 }));
     hit.on("pointerout", () => scene.tweens.add({ targets: container, y, duration: 80 }));
 
@@ -241,6 +245,7 @@ export function createScenes(Phaser: PhaserNS) {
 
       // Touch / drag scroll
       this.input.on("pointerdown", (p: import("phaser").Input.Pointer) => {
+        // If a UI element handled the pointerdown, it stops propagation and we don't start drag-scrolling.
         this.isDragging = true;
         this.dragStartY = p.y;
         this.camStartY = cam.scrollY;
@@ -346,7 +351,10 @@ export function createScenes(Phaser: PhaserNS) {
       // Update scroll bounds (content may exceed viewport on small screens)
       // Rough bottom of content: y + cardH + labels + padding
       this.contentHeight = Math.max(860, y + cardH + 140);
-      this.cameras.main.setBounds(0, 0, width, this.contentHeight);
+      const cam = this.cameras.main;
+      cam.setBounds(0, 0, width, this.contentHeight);
+      const maxScroll = Math.max(0, this.contentHeight - height);
+      cam.scrollY = Phaser.Math.Clamp(cam.scrollY, 0, maxScroll);
     }
 
     private startMonth() {
@@ -398,7 +406,9 @@ export function createScenes(Phaser: PhaserNS) {
 
       const hit = this.add.rectangle(x + w / 2, y + h / 2, w, h, 0xffffff, 0.0001);
       hit.setInteractive({ useHandCursor: true });
-      hit.on("pointerdown", () => {
+      hit.on("pointerdown", (_p: import("phaser").Input.Pointer, _lx: number, _ly: number, ev: import("phaser").Types.Input.EventData) => {
+        // Don't start drag-scrolling when clicking the card.
+        ev.stopPropagation();
         this.tweens.add({
           targets: c,
           scaleX: 0.98,
