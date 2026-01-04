@@ -311,7 +311,6 @@ export function createScenes(Phaser: PhaserNS) {
         this.fixed!.add(
           button(this, width / 2 - 170, height / 2 - 24, 340, 52, "今月を開始", () => this.startMonth(), "primary"),
         );
-        this.fixed!.add(button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral"));
         return;
       }
 
@@ -346,7 +345,6 @@ export function createScenes(Phaser: PhaserNS) {
       // These controls should stay on screen while scrolling
       this.fixed!.add(button(this, width - 200, height - 70, 170, 44, "次の月へ", () => this.nextMonth(), "primary"));
       this.fixed!.add(button(this, width - 390, height - 70, 170, 44, "スキップ", () => this.nextMonth(), "neutral"));
-      this.fixed!.add(button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral"));
 
       // Update scroll bounds (content may exceed viewport on small screens)
       // Rough bottom of content: y + cardH + labels + padding
