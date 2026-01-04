@@ -89,6 +89,7 @@ export function createScenes(Phaser: PhaserNS) {
     }
 
     create() {
+      this.cameras.main.setBackgroundColor("#0b1220");
       this.shared = this.registry.get("shared") as Shared;
 
       const { width, height } = this.scale;
@@ -127,6 +128,7 @@ export function createScenes(Phaser: PhaserNS) {
     }
 
     create() {
+      this.cameras.main.setBackgroundColor("#0b1220");
       this.shared = this.registry.get("shared") as Shared;
       const { width, height } = this.scale;
 
@@ -191,6 +193,7 @@ export function createScenes(Phaser: PhaserNS) {
     }
 
     create() {
+      this.cameras.main.setBackgroundColor("#0b1220");
       this.shared = this.registry.get("shared") as Shared;
       if (!this.shared.state) {
         this.scene.start("Role");
