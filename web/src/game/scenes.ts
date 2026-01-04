@@ -88,7 +88,8 @@ export function createScenes(Phaser: PhaserNS) {
 
   class TitleScene extends Phaser.Scene {
     declare shared: Shared;
-    private bg?: import("phaser").GameObjects.Rectangle;
+    private bg: import("phaser").GameObjects.Rectangle | null = null;
+    private onResize = () => this.ensureSolidBg();
 
     constructor() {
       super("Title");
@@ -124,25 +125,33 @@ export function createScenes(Phaser: PhaserNS) {
         "primary",
       );
 
-      this.scale.on("resize", () => this.ensureSolidBg());
+      this.scale.on("resize", this.onResize);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.scale.off("resize", this.onResize);
+        this.bg?.destroy();
+        this.bg = null;
+      });
     }
 
     private ensureSolidBg() {
       const { width, height } = this.scale;
-      if (!this.bg) {
+      // bg can be nullified/destroyed during hot-reload or scene transitions.
+      if (!this.bg || !this.bg.active) {
+        this.bg?.destroy();
         this.bg = this.add.rectangle(0, 0, width, height, 0x0b1220, 1);
         this.bg.setOrigin(0, 0);
         this.bg.setDepth(-10_000);
         this.bg.setScrollFactor(0);
-      } else {
-        this.bg.setSize(width, height);
+        return;
       }
+      this.bg.setSize(width, height);
     }
   }
 
   class RoleScene extends Phaser.Scene {
     declare shared: Shared;
-    private bg?: import("phaser").GameObjects.Rectangle;
+    private bg: import("phaser").GameObjects.Rectangle | null = null;
+    private onResize = () => this.ensureSolidBg();
 
     constructor() {
       super("Role");
@@ -193,19 +202,25 @@ export function createScenes(Phaser: PhaserNS) {
 
       button(this, 30, height - 70, 160, 44, "戻る", () => this.scene.start("Title"), "neutral");
 
-      this.scale.on("resize", () => this.ensureSolidBg());
+      this.scale.on("resize", this.onResize);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.scale.off("resize", this.onResize);
+        this.bg?.destroy();
+        this.bg = null;
+      });
     }
 
     private ensureSolidBg() {
       const { width, height } = this.scale;
-      if (!this.bg) {
+      if (!this.bg || !this.bg.active) {
+        this.bg?.destroy();
         this.bg = this.add.rectangle(0, 0, width, height, 0x0b1220, 1);
         this.bg.setOrigin(0, 0);
         this.bg.setDepth(-10_000);
         this.bg.setScrollFactor(0);
-      } else {
-        this.bg.setSize(width, height);
+        return;
       }
+      this.bg.setSize(width, height);
     }
   }
 
@@ -216,7 +231,8 @@ export function createScenes(Phaser: PhaserNS) {
     private fixed?: import("phaser").GameObjects.Container;
     private center?: import("phaser").GameObjects.Container;
     private msg?: import("phaser").GameObjects.Text;
-    private bg?: import("phaser").GameObjects.Rectangle;
+    private bg: import("phaser").GameObjects.Rectangle | null = null;
+    private onResize = () => this.ensureSolidBg();
     private scrollBound = false;
     private isDragging = false;
     private dragStartY = 0;
@@ -239,19 +255,25 @@ export function createScenes(Phaser: PhaserNS) {
       this.setupScrolling();
       this.render();
 
-      this.scale.on("resize", () => this.ensureSolidBg());
+      this.scale.on("resize", this.onResize);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.scale.off("resize", this.onResize);
+        this.bg?.destroy();
+        this.bg = null;
+      });
     }
 
     private ensureSolidBg() {
       const { width, height } = this.scale;
-      if (!this.bg) {
+      if (!this.bg || !this.bg.active) {
+        this.bg?.destroy();
         this.bg = this.add.rectangle(0, 0, width, height, 0x0b1220, 1);
         this.bg.setOrigin(0, 0);
         this.bg.setDepth(-10_000);
         this.bg.setScrollFactor(0);
-      } else {
-        this.bg.setSize(width, height);
+        return;
       }
+      this.bg.setSize(width, height);
     }
 
     private drawFrame() {
