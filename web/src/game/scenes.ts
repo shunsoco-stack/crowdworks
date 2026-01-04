@@ -172,6 +172,7 @@ export function createScenes(Phaser: PhaserNS) {
     declare shared: Shared;
 
     private hud?: import("phaser").GameObjects.Container;
+    private fixed?: import("phaser").GameObjects.Container;
     private center?: import("phaser").GameObjects.Container;
     private msg?: import("phaser").GameObjects.Text;
     private scrollBound = false;
@@ -198,15 +199,22 @@ export function createScenes(Phaser: PhaserNS) {
     private drawFrame() {
       const { width } = this.scale;
       this.hud?.destroy(true);
+      this.fixed?.destroy(true);
       this.center?.destroy(true);
 
       this.hud = this.add.container(0, 0);
+      this.fixed = this.add.container(0, 0);
       this.center = this.add.container(0, 0);
 
       pill(this, 20, 18, width - 40, 64);
       this.hud.add(uiText(this, 34, 34, "", 16, "rgba(229,231,235,.8)").setName("hud_left"));
       this.hud.add(uiText(this, width - 34, 34, "", 16, "rgba(229,231,235,.8)").setOrigin(1, 0).setName("hud_right"));
       this.hud.setScrollFactor(0);
+      this.hud.setDepth(900);
+
+      // Fixed overlay for buttons / tips etc.
+      this.fixed.setScrollFactor(0);
+      this.fixed.setDepth(1000);
     }
 
     private setupScrolling() {
@@ -269,8 +277,10 @@ export function createScenes(Phaser: PhaserNS) {
       );
 
       this.center!.removeAll(true);
+      this.fixed!.removeAll(true);
       this.msg?.destroy(true);
       this.msg = uiText(this, 30, 98, "", 14, "rgba(229,231,235,.75)");
+      this.fixed!.add(this.msg);
 
       // Progress bar
       const denom = Math.max(1, s.fixedExpenses);
@@ -284,7 +294,7 @@ export function createScenes(Phaser: PhaserNS) {
       g.fillRoundedRect(barX, barY, barW, barH, 999);
       g.fillStyle(0x10b981, 0.9);
       g.fillRoundedRect(barX, barY, Math.max(6, barW * p), barH, 999);
-      this.center!.add(g);
+      this.fixed!.add(g);
 
       if (isWin(s)) {
         this.showWin();
@@ -293,8 +303,10 @@ export function createScenes(Phaser: PhaserNS) {
 
       if (!s.inMonth) {
         this.msg.setText("▶ 今月を開始しよう（収支計算 → イベント → オファー）");
-        button(this, width / 2 - 170, height / 2 - 24, 340, 52, "今月を開始", () => this.startMonth(), "primary");
-        button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral");
+        this.fixed!.add(
+          button(this, width / 2 - 170, height / 2 - 24, 340, 52, "今月を開始", () => this.startMonth(), "primary"),
+        );
+        this.fixed!.add(button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral"));
         return;
       }
 
@@ -302,14 +314,16 @@ export function createScenes(Phaser: PhaserNS) {
       const ev = s.currentEvent!;
       const evPanel = card(this, 40, 120, width - 80, 150);
       this.center!.add(evPanel);
-      uiText(this, 60, 142, "⚡ イベント", 16, "rgba(229,231,235,.75)").setFontStyle("800");
-      uiText(this, 60, 170, ev.name, 22).setFontStyle("900");
-      uiText(this, 60, 204, ev.description, 16, "rgba(229,231,235,.80)");
-      uiText(this, 60, 236, `影響：${evEffect(ev)}`, 14, "rgba(229,231,235,.70)");
+      this.center!.add(uiText(this, 60, 142, "⚡ イベント", 16, "rgba(229,231,235,.75)").setFontStyle("800"));
+      this.center!.add(uiText(this, 60, 170, ev.name, 22).setFontStyle("900"));
+      this.center!.add(uiText(this, 60, 204, ev.description, 16, "rgba(229,231,235,.80)"));
+      this.center!.add(uiText(this, 60, 236, `影響：${evEffect(ev)}`, 14, "rgba(229,231,235,.70)"));
 
       // Offer cards
       const offersNow = s.currentOffers ?? [];
-      uiText(this, 40, 292, "🃏 オファー（どれか1つ買うか、スキップ）", 16, "rgba(229,231,235,.75)").setFontStyle("800");
+      this.center!.add(
+        uiText(this, 40, 292, "🃏 オファー（どれか1つ買うか、スキップ）", 16, "rgba(229,231,235,.75)").setFontStyle("800"),
+      );
       const cardW = (width - 120) / 2;
       const cardH = 250;
       const y = 320;
@@ -320,11 +334,14 @@ export function createScenes(Phaser: PhaserNS) {
       // Bottom controls
       const net = netMonthly(s);
       const netColor = net >= 0 ? "rgba(16,185,129,.95)" : "rgba(239,68,68,.95)";
-      uiText(this, 40, y + cardH + 16, `今月の純キャッシュフロー：${net >= 0 ? "+" : ""}${fmt(net)}`, 16, netColor).setFontStyle("800");
+      this.center!.add(
+        uiText(this, 40, y + cardH + 16, `今月の純キャッシュフロー：${net >= 0 ? "+" : ""}${fmt(net)}`, 16, netColor).setFontStyle("800"),
+      );
 
-      button(this, width - 200, height - 70, 170, 44, "次の月へ", () => this.nextMonth(), "primary");
-      button(this, width - 390, height - 70, 170, 44, "スキップ", () => this.nextMonth(), "neutral");
-      button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral");
+      // These controls should stay on screen while scrolling
+      this.fixed!.add(button(this, width - 200, height - 70, 170, 44, "次の月へ", () => this.nextMonth(), "primary"));
+      this.fixed!.add(button(this, width - 390, height - 70, 170, 44, "スキップ", () => this.nextMonth(), "neutral"));
+      this.fixed!.add(button(this, 30, height - 70, 160, 44, "職業選択へ", () => this.scene.start("Role"), "neutral"));
 
       // Update scroll bounds (content may exceed viewport on small screens)
       // Rough bottom of content: y + cardH + labels + padding
@@ -347,16 +364,18 @@ export function createScenes(Phaser: PhaserNS) {
       this.center!.add(c);
       if (!offer) return c;
 
-      uiText(this, x + 18, y + 16, offer.name, 18).setFontStyle("900");
-      uiText(this, x + 18, y + 44, kindLabel(offer.kind), 12, "rgba(229,231,235,.70)");
+      this.center!.add(uiText(this, x + 18, y + 16, offer.name, 18).setFontStyle("900"));
+      this.center!.add(uiText(this, x + 18, y + 44, kindLabel(offer.kind), 12, "rgba(229,231,235,.70)"));
 
       const lines = wrapText(offer.description, 42);
-      uiText(this, x + 18, y + 70, lines, 14, "rgba(229,231,235,.80)");
+      this.center!.add(uiText(this, x + 18, y + 70, lines, 14, "rgba(229,231,235,.80)"));
 
-      uiText(this, x + 18, y + 156, `頭金：${fmt(offer.down_payment)}`, 14, "rgba(229,231,235,.75)");
-      uiText(this, x + 18, y + 178, `パッシブ：+${fmt(offer.passive_income_delta)}/月`, 14, "rgba(16,185,129,.95)");
-      uiText(this, x + 18, y + 200, `給与：+${fmt(offer.salary_delta)}/月`, 14, "rgba(59,130,246,.95)");
-      uiText(this, x + 18, y + 222, `一時影響：${offer.cash_delta >= 0 ? "+" : ""}${fmt(offer.cash_delta)}`, 14, "rgba(229,231,235,.70)");
+      this.center!.add(uiText(this, x + 18, y + 156, `頭金：${fmt(offer.down_payment)}`, 14, "rgba(229,231,235,.75)"));
+      this.center!.add(uiText(this, x + 18, y + 178, `パッシブ：+${fmt(offer.passive_income_delta)}/月`, 14, "rgba(16,185,129,.95)"));
+      this.center!.add(uiText(this, x + 18, y + 200, `給与：+${fmt(offer.salary_delta)}/月`, 14, "rgba(59,130,246,.95)"));
+      this.center!.add(
+        uiText(this, x + 18, y + 222, `一時影響：${offer.cash_delta >= 0 ? "+" : ""}${fmt(offer.cash_delta)}`, 14, "rgba(229,231,235,.70)"),
+      );
 
       const affordable = canAfford(this.shared.state!, offer);
       const label = affordable ? "購入する" : "現金不足";
