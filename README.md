@@ -8,24 +8,22 @@ monthly dealer inventory tracking, and sales/gross margin calculations.
 
 - `InventoryManagement.bas`: VBA module with setup, add item, stock update,
   and reorder list macros.
-- `InventoryTemplate.xlsx`: ready-to-use workbook with all sheets and headers.
+- `InventoryTemplate.xlsm`: ready-to-use workbook with all sheets and headers.
 
 ## Template Workbook
 
-`InventoryTemplate.xlsx` includes the required sheets and headers so beginners
-can start entering data immediately. Excel macros cannot be saved in `.xlsx`,
-so if you want to use the VBA automation, save it as `.xlsm` and import the
-`InventoryManagement.bas` module.
+`InventoryTemplate.xlsm` includes the required sheets and headers so beginners
+can start entering data immediately. If macros are not present, import the
+`InventoryManagement.bas` module to enable automation.
 
 ## Quick Start
 
-1. Open `InventoryTemplate.xlsx`.
-2. Save as **Excel Macro-Enabled Workbook** (`.xlsm`) if you want to use macros.
-3. Press `ALT+F11` to open the VBA editor.
-4. From the menu, choose **File > Import File...** and import
+1. Open `InventoryTemplate.xlsm`.
+2. Press `ALT+F11` to open the VBA editor.
+3. From the menu, choose **File > Import File...** and import
    `InventoryManagement.bas`.
-5. Run `SetupAllSheets` if you need to re-create the sheets.
-6. Use the macros below to manage data:
+4. Run `SetupAllSheets` if you need to re-create the sheets.
+5. Use the macros below to manage data:
    - `AddItem` - add a new inventory item.
    - `AddPriceEntry` - add yearly price and cost per item.
    - `AddDealer` - register dealer and qualification rate.
