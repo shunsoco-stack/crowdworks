@@ -12,6 +12,16 @@ let pdfjsReadyPromise = null;
 
 const PDFJS_SOURCES = [
   {
+    script: "./vendor/pdf.min.js",
+    worker: "./vendor/pdf.worker.min.js",
+  },
+  {
+    script:
+      "https://raw.githubusercontent.com/mozilla/pdf.js/v4.2.67/build/pdf.min.js",
+    worker:
+      "https://raw.githubusercontent.com/mozilla/pdf.js/v4.2.67/build/pdf.worker.min.js",
+  },
+  {
     script:
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js",
     worker:
@@ -351,7 +361,7 @@ function buildErrorMessage(error) {
     return "PDFファイルが見つかりませんでした。";
   }
   if (error?.message === "PDFJS_LOAD_FAILED") {
-    return "PDF読み取りライブラリの読み込みに失敗しました。ネットワーク制限や広告ブロッカーをご確認ください。";
+    return "PDF読み取りライブラリの読み込みに失敗しました。ネットワーク制限/広告ブロッカーの確認、またはライブラリを同梱してください。";
   }
   if (message) {
     return `抽出に失敗しました: ${message}`;

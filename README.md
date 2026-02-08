@@ -13,3 +13,11 @@ using PDF.js. It does not upload files to a server.
 
 1. Enable GitHub Pages (Deploy from branch / root).
 2. Open `https://<user>.github.io/<repo>/demo.html`.
+
+### If PDF.js is blocked
+
+Some networks block external libraries. You can host PDF.js locally:
+
+1. Download `pdf.min.js` and `pdf.worker.min.js` from the PDF.js release.
+2. Place them in `vendor/` at the repo root.
+3. Access `demo.html` again.
