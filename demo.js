@@ -8,6 +8,25 @@ const downloadCsvButton = document.getElementById("downloadCsv");
 const copyCsvButton = document.getElementById("copyCsv");
 
 let currentRecord = null;
+let pdfjsReadyPromise = null;
+
+const PDFJS_SOURCES = [
+  {
+    script:
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js",
+    worker:
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js",
+  },
+  {
+    script: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js",
+    worker:
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js",
+  },
+  {
+    script: "https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.min.js",
+    worker: "https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.worker.min.js",
+  },
+];
 
 const FIELD_CONFIG = [
   {
@@ -112,6 +131,41 @@ function detectCurrency(text) {
     return "JPY";
   }
   return "";
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function ensurePdfJs() {
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_SOURCES[0].worker;
+    return;
+  }
+  if (!pdfjsReadyPromise) {
+    pdfjsReadyPromise = (async () => {
+      for (const source of PDFJS_SOURCES) {
+        try {
+          await loadScript(source.script);
+          if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = source.worker;
+            return;
+          }
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+      throw new Error("PDFJS_LOAD_FAILED");
+    })();
+  }
+  return pdfjsReadyPromise;
 }
 
 function extractFields(text, sourceName) {
@@ -223,14 +277,12 @@ async function handleExtract() {
     setStatus("PDFを選択してください。", "error");
     return;
   }
-  if (!window.pdfjsLib) {
-    setStatus("PDF読み取りライブラリの読み込みに失敗しました。", "error");
-    return;
-  }
 
-  setStatus("読み込み中...");
+  setStatus("PDFライブラリを読み込み中...");
   extractButton.disabled = true;
   try {
+    await ensurePdfJs();
+    setStatus("読み込み中...");
     const text = await readPdfText(file);
     textPreview.value = text;
     const { record, missing } = extractFields(text, file.name);
@@ -298,8 +350,8 @@ function buildErrorMessage(error) {
   if (name === "MissingPDFException") {
     return "PDFファイルが見つかりませんでした。";
   }
-  if (!window.pdfjsLib) {
-    return "PDF読み取りライブラリの読み込みに失敗しました。";
+  if (error?.message === "PDFJS_LOAD_FAILED") {
+    return "PDF読み取りライブラリの読み込みに失敗しました。ネットワーク制限や広告ブロッカーをご確認ください。";
   }
   if (message) {
     return `抽出に失敗しました: ${message}`;
@@ -308,8 +360,7 @@ function buildErrorMessage(error) {
 }
 
 if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_SOURCES[0].worker;
 }
 
 extractButton.addEventListener("click", handleExtract);
