@@ -82,6 +82,11 @@ img {
   color: var(--primary);
 }
 
+.nav .nav-demo {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -150,6 +155,17 @@ img {
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 24px;
+}
+
+.hero-link {
+  margin-top: -12px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.hero-link a {
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .hero-tags {
