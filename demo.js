@@ -6,9 +6,11 @@ const missingFieldsEl = document.getElementById("missingFields");
 const textPreview = document.getElementById("textPreview");
 const downloadCsvButton = document.getElementById("downloadCsv");
 const copyCsvButton = document.getElementById("copyCsv");
+const ocrToggle = document.getElementById("ocrToggle");
 
 let currentRecord = null;
 let pdfjsReadyPromise = null;
+let tesseractReadyPromise = null;
 
 const PDFJS_SOURCES = [
   {
@@ -30,6 +32,11 @@ const PDFJS_SOURCES = [
     worker:
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
   },
+];
+
+const TESSERACT_SOURCES = [
+  "https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js",
+  "https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js",
 ];
 
 const FIELD_CONFIG = [
@@ -146,6 +153,28 @@ function loadScript(src) {
     script.onerror = () => reject(new Error(`Failed to load ${src}`));
     document.head.appendChild(script);
   });
+}
+
+async function ensureTesseract() {
+  if (window.Tesseract) {
+    return;
+  }
+  if (!tesseractReadyPromise) {
+    tesseractReadyPromise = (async () => {
+      for (const source of TESSERACT_SOURCES) {
+        try {
+          await loadScript(source);
+          if (window.Tesseract) {
+            return;
+          }
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+      throw new Error("TESSERACT_LOAD_FAILED");
+    })();
+  }
+  return tesseractReadyPromise;
 }
 
 async function ensurePdfJs() {
@@ -272,7 +301,34 @@ async function readPdfText(file) {
     const pageText = await extractPageText(page);
     pagesText.push(pageText);
   }
-  return pagesText.join("\n");
+  return { text: pagesText.join("\n"), pdf };
+}
+
+async function renderFirstPageToCanvas(pdf) {
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 2.0 });
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: context, viewport }).promise;
+  return canvas;
+}
+
+async function runOcr(pdf) {
+  await ensureTesseract();
+  const canvas = await renderFirstPageToCanvas(pdf);
+  const { data } = await window.Tesseract.recognize(canvas, "jpn+eng", {
+    logger: (msg) => {
+      if (msg.status === "recognizing text") {
+        const progress = Math.round((msg.progress || 0) * 100);
+        setStatus(`OCR中... ${progress}%`);
+      } else {
+        setStatus(`OCR準備中...`);
+      }
+    },
+  });
+  return data.text || "";
 }
 
 async function handleExtract() {
@@ -287,9 +343,18 @@ async function handleExtract() {
   try {
     await ensurePdfJs();
     setStatus("読み込み中...");
-    const text = await readPdfText(file);
-    textPreview.value = text;
-    const { record, missing } = extractFields(text, file.name);
+    const { text, pdf } = await readPdfText(file);
+    let finalText = text;
+    if (!finalText.trim()) {
+      if (ocrToggle.checked) {
+        setStatus("画像PDFの可能性があります。OCRを開始します。");
+        finalText = await runOcr(pdf);
+      } else {
+        setStatus("テキストを抽出できませんでした（画像PDFの可能性）。", "error");
+      }
+    }
+    textPreview.value = finalText;
+    const { record, missing } = extractFields(finalText, file.name);
     currentRecord = record;
     renderResult(record);
     if (missing.length) {
@@ -297,8 +362,8 @@ async function handleExtract() {
     } else {
       missingFieldsEl.textContent = "すべての項目を抽出しました。";
     }
-    if (!text.trim()) {
-      setStatus("テキストを抽出できませんでした（画像PDFの可能性）。", "error");
+    if (!finalText.trim()) {
+      setStatus("テキストを抽出できませんでした。", "error");
     } else {
       setStatus("抽出完了", "success");
     }
@@ -356,6 +421,9 @@ function buildErrorMessage(error) {
   }
   if (error?.message === "PDFJS_LOAD_FAILED") {
     return "PDF読み取りライブラリの読み込みに失敗しました。ネットワーク制限/広告ブロッカーの確認、またはライブラリを同梱してください。";
+  }
+  if (error?.message === "TESSERACT_LOAD_FAILED") {
+    return "OCRライブラリの読み込みに失敗しました。ネットワーク制限をご確認ください。";
   }
   if (message) {
     return `抽出に失敗しました: ${message}`;

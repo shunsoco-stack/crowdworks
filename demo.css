@@ -88,6 +88,20 @@ body {
   margin-top: 12px;
 }
 
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.toggle input {
+  width: 18px;
+  height: 18px;
+}
+
 .button {
   background: var(--primary);
   color: #ffffff;
