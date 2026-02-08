@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PDF請求書 抽出デモ（ブラウザ完結）</title>
+    <meta
+      name="description"
+      content="PDFをブラウザで読み取り、請求書の主要項目を抽出してCSV出力するデモです。"
+    />
+    <link rel="stylesheet" href="demo.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="logo">PDF抽出デモ</div>
+        <div class="badge">ブラウザ完結</div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>PDFをアップロードして、抽出結果を即表示</h1>
+        <p>
+          送信は行わず、ブラウザ内で処理します。請求書番号・発行日・金額などの
+          主要項目を抽出し、CSVとして保存できます。
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>1. PDFをアップロード</h2>
+        <p class="muted">PDFはこのブラウザ内で処理されます。</p>
+        <div class="uploader">
+          <input id="pdfInput" type="file" accept="application/pdf" />
+          <button id="extractButton" class="button" type="button">
+            抽出する
+          </button>
+        </div>
+        <p id="status" class="status"></p>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h2>2. 抽出結果</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>項目</th>
+                  <th>値</th>
+                </tr>
+              </thead>
+              <tbody id="resultBody"></tbody>
+            </table>
+          </div>
+          <div class="actions">
+            <button id="downloadCsv" class="button ghost" type="button">
+              CSVをダウンロード
+            </button>
+            <button id="copyCsv" class="button ghost" type="button">
+              CSVをコピー
+            </button>
+          </div>
+          <p id="missingFields" class="note"></p>
+        </div>
+
+        <div class="card">
+          <h2>抽出テキスト（確認用）</h2>
+          <textarea
+            id="textPreview"
+            rows="14"
+            placeholder="PDFを読み取るとここにテキストが表示されます。"
+          ></textarea>
+          <p class="note">
+            抽出できない項目がある場合は、テキストの表記を確認します。
+          </p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>注意事項</h2>
+        <ul>
+          <li>PDFの形式によっては正確に抽出できない場合があります。</li>
+          <li>スキャンPDFはOCRが必要です（別途対応）。</li>
+          <li>デモ用途のため、抽出ロジックは簡易版です。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <span>© 2026 PDF抽出デモ</span>
+        <span class="muted">ブラウザ内処理 / デモ用途</span>
+      </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+    <script src="demo.js"></script>
+  </body>
+</html>
