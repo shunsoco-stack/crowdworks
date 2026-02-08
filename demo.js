@@ -43,37 +43,47 @@ const FIELD_CONFIG = [
   {
     label: "請求書番号",
     key: "invoice_no",
-    patterns: [/請求書番号\s*([A-Z0-9-]+)/, /Invoice No:\s*([A-Z0-9-]+)/],
+    patterns: [
+      /請求書番号[:：]?\s*([A-Z0-9-]+)/,
+      /請\s*求\s*書\s*番\s*号[:：]?\s*([A-Z0-9-]+)/,
+      /Invoice No:\s*([A-Z0-9-]+)/,
+    ],
   },
   {
     label: "発行日",
     key: "invoice_date",
     patterns: [
-      /発行日\s*([0-9]{4}[/-][0-9]{2}[/-][0-9]{2})/,
-      /発行日\s*([0-9]{4}年[0-9]{2}月[0-9]{2}日)/,
+      /発行日\s*([0-9]{4}[/-][0-9]{1,2}[/-][0-9]{1,2})/,
+      /発行日\s*([0-9]{4}年[0-9]{1,2}月[0-9]{1,2}日)/,
+      /発\s*行\s*日\s*([0-9]{4}年[0-9]{1,2}月[0-9]{1,2}日)/,
       /Invoice Date:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/,
     ],
   },
   {
     label: "請求元",
     key: "vendor",
-    patterns: [/請求元\s*(.+)/, /Vendor:\s*(.+)/],
+    patterns: [/請求元\s*(.+)/, /請\s*求\s*元\s*(.+)/, /Vendor:\s*(.+)/],
   },
   {
     label: "請求先",
     key: "customer",
-    patterns: [/請求先\s*(.+)/, /Billing To:\s*(.+)/],
+    patterns: [/請求先\s*(.+)/, /請\s*求\s*先\s*(.+)/, /Billing To:\s*(.+)/],
   },
   {
     label: "小計",
     key: "subtotal",
-    patterns: [/小計\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{2})?)/, /Subtotal:\s*([0-9,]+\.[0-9]{2})/],
+    patterns: [
+      /小計\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
+      /小\s*計\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
+      /Subtotal:\s*([0-9,]+\.[0-9]{2})/,
+    ],
   },
   {
     label: "消費税",
     key: "tax",
     patterns: [
-      /消費税.*?\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{2})?)/,
+      /消費税.*?\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
+      /消\s*費\s*税.*?\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
       /Tax:\s*([0-9,]+\.[0-9]{2})/,
     ],
   },
@@ -81,8 +91,9 @@ const FIELD_CONFIG = [
     label: "合計金額",
     key: "total",
     patterns: [
-      /合計金額\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{2})?)/,
-      /合計\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{2})?)/,
+      /合計金額\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
+      /合\s*計\s*金\s*額\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
+      /合計\s*[¥￥]?\s*([0-9,]+(?:\.[0-9]{1,2})?)/,
       /Total:\s*([0-9,]+\.[0-9]{2})/,
     ],
   },
@@ -112,8 +123,17 @@ function normalizeDate(value) {
     if (match) {
       return `${match[1]}-${match[2]}-${match[3]}`;
     }
+    const altMatch = value.match(/([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})日/);
+    if (altMatch) {
+      return `${altMatch[1]}-${altMatch[2].padStart(2, "0")}-${altMatch[3].padStart(2, "0")}`;
+    }
   }
-  return value.replace(/\//g, "-");
+  const normalized = value.replace(/\//g, "-");
+  const parts = normalized.split("-");
+  if (parts.length === 3) {
+    return `${parts[0]}-${parts[1].padStart(2, "0")}-${parts[2].padStart(2, "0")}`;
+  }
+  return normalized;
 }
 
 function normalizeAmount(value) {
@@ -121,6 +141,7 @@ function normalizeAmount(value) {
   return value
     .replace(/[¥￥]/g, "")
     .replace(/,/g, "")
+    .replace(/\s+/g, "")
     .replace(/円/g, "")
     .replace(/JPY|USD/g, "")
     .trim();
@@ -142,6 +163,33 @@ function detectCurrency(text) {
     return "JPY";
   }
   return "";
+}
+
+function normalizeFullWidth(text) {
+  return text
+    .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xff10 + 0x30))
+    .replace(/[Ａ-Ｚ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xff21 + 0x41))
+    .replace(/[ａ-ｚ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xff41 + 0x61))
+    .replace(/：/g, ":")
+    .replace(/／/g, "/")
+    .replace(/－/g, "-")
+    .replace(/　/g, " ");
+}
+
+function normalizeOcrText(text) {
+  let normalized = normalizeFullWidth(text || "");
+  normalized = normalized.replace(/\r\n/g, "\n");
+  let prev;
+  do {
+    prev = normalized;
+    normalized = normalized.replace(
+      /([ぁ-んァ-ン一-龥])\s+([ぁ-んァ-ン一-龥])/g,
+      "$1$2"
+    );
+  } while (normalized !== prev);
+  normalized = normalized.replace(/(\d)\s+(?=\d)/g, "$1");
+  normalized = normalized.replace(/[ \t]+/g, " ");
+  return normalized;
 }
 
 function loadScript(src) {
@@ -354,7 +402,9 @@ async function handleExtract() {
       }
     }
     textPreview.value = finalText;
-    const { record, missing } = extractFields(finalText, file.name);
+    const normalizedText = normalizeOcrText(finalText);
+    textPreview.value = normalizedText;
+    const { record, missing } = extractFields(normalizedText, file.name);
     currentRecord = record;
     renderResult(record);
     if (missing.length) {
