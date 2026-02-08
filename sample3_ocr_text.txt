@@ -1,0 +1,7 @@
+INVOICE
+Vendor: Example Logistics Co.
+Inv0ice No: INV-2026-02-019
+Date: 2026/02/20
+Total Due: USD 2,450.00
+Tax: USD 245.00
+Notes: Payment due within 14 days.

@@ -1,0 +1,6 @@
+date,order_id,amount,tax,store,source_file
+2026-01-05,A-1001,120.00,12.00,Store A,sample2_sales_raw_store_a.csv
+2026-01-07,B-2001,200.00,20.00,Store B,sample2_sales_raw_store_b.csv
+2026-01-18,A-1002,80.00,8.00,Store A,sample2_sales_raw_store_a.csv
+2026-02-03,A-1003,160.00,16.00,Store A,sample2_sales_raw_store_a.csv
+2026-02-14,B-2002,150.00,15.00,Store B,sample2_sales_raw_store_b.csv

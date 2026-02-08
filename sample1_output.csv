@@ -1,0 +1,2 @@
+invoice_no,invoice_date,vendor,customer,subtotal,tax,total,currency,source
+INV-2026-02-001,2026-02-05,Example Logistics Co.,Sample Trading LLC,1200.00,120.00,1320.00,USD,sample1_invoice_text.txt

@@ -1,0 +1,13 @@
+INVOICE
+Vendor: Example Logistics Co.
+Invoice No: INV-2026-02-001
+Invoice Date: 2026-02-05
+Billing To: Sample Trading LLC
+
+Line Items:
+1) Shipping fee (2 parcels) 800.00
+2) Handling fee (1 unit) 400.00
+
+Subtotal: 1200.00
+Tax: 120.00
+Total: 1320.00
