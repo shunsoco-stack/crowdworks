@@ -39,6 +39,17 @@ FIELD_PATTERNS = {
 }
 
 YEN_SIGNS = ("\u00a5", "\uffe5")
+OUTPUT_COLUMNS = [
+    ("\u8acb\u6c42\u66f8\u756a\u53f7", "invoice_no"),
+    ("\u767a\u884c\u65e5", "invoice_date"),
+    ("\u8acb\u6c42\u5143", "vendor"),
+    ("\u8acb\u6c42\u5148", "customer"),
+    ("\u5c0f\u8a08", "subtotal"),
+    ("\u6d88\u8cbb\u7a0e", "tax"),
+    ("\u5408\u8a08\u91d1\u984d", "total"),
+    ("\u901a\u8ca8", "currency"),
+    ("\u5143\u30d5\u30a1\u30a4\u30eb", "source"),
+]
 
 
 def load_text(path):
@@ -129,19 +140,10 @@ def extract_fields(text):
 
 
 def write_csv(path, record, source):
-    headers = [
-        "invoice_no",
-        "invoice_date",
-        "vendor",
-        "customer",
-        "subtotal",
-        "tax",
-        "total",
-        "currency",
-        "source",
-    ]
-    row = {**record, "source": source}
-    with open(path, "w", newline="", encoding="utf-8") as handle:
+    headers = [label for label, _ in OUTPUT_COLUMNS]
+    record = {**record, "source": source}
+    row = {label: record.get(key, "") for label, key in OUTPUT_COLUMNS}
+    with open(path, "w", newline="", encoding="utf-8-sig") as handle:
         writer = csv.DictWriter(handle, fieldnames=headers)
         writer.writeheader()
         writer.writerow(row)

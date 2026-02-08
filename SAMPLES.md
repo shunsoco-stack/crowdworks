@@ -28,6 +28,7 @@ python sample1_extract_invoice.py
   file to the script.
 - GAS version reads text from cell A1 in sheet `Sample1_Input` and writes to
   `Sample1_Output`.
+- CSV output is UTF-8 with BOM so Japanese headers display in Excel.
 
 ---
 
