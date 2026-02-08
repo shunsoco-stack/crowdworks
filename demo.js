@@ -11,10 +11,10 @@ const ocrToggle = document.getElementById("ocrToggle");
 let currentRecord = null;
 let pdfjsReadyPromise = null;
 let tesseractReadyPromise = null;
-const OCR_SETTINGS = {
-  scale: 3.0,
-  threshold: 175,
-};
+const OCR_PASSES = [
+  { label: "標準", scale: 3.0, threshold: null, psm: "3" },
+  { label: "高精度", scale: 4.0, threshold: 175, psm: "6" },
+];
 
 const PDFJS_SOURCES = [
   {
@@ -367,7 +367,10 @@ async function renderFirstPageToCanvas(pdf, scale = OCR_SETTINGS.scale) {
   return canvas;
 }
 
-function applyOcrPreprocess(canvas) {
+function applyOcrPreprocess(canvas, threshold) {
+  if (threshold === null || threshold === undefined) {
+    return canvas;
+  }
   const context = canvas.getContext("2d");
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
@@ -376,7 +379,7 @@ function applyOcrPreprocess(canvas) {
     const g = data[i + 1];
     const b = data[i + 2];
     const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-    const value = luminance > OCR_SETTINGS.threshold ? 255 : 0;
+    const value = luminance > threshold ? 255 : 0;
     data[i] = value;
     data[i + 1] = value;
     data[i + 2] = value;
@@ -387,21 +390,32 @@ function applyOcrPreprocess(canvas) {
 
 async function runOcr(pdf) {
   await ensureTesseract();
-  let canvas = await renderFirstPageToCanvas(pdf);
-  canvas = applyOcrPreprocess(canvas);
-  const { data } = await window.Tesseract.recognize(canvas, "jpn+eng", {
-    logger: (msg) => {
-      if (msg.status === "recognizing text") {
-        const progress = Math.round((msg.progress || 0) * 100);
-        setStatus(`OCR中... ${progress}%`);
-      } else {
-        setStatus(`OCR準備中...`);
-      }
-    },
-    tessedit_pageseg_mode: "6",
-    preserve_interword_spaces: "1",
-  });
-  return data.text || "";
+  let bestText = "";
+  for (let i = 0; i < OCR_PASSES.length; i += 1) {
+    const pass = OCR_PASSES[i];
+    setStatus(`OCR中（${pass.label}）...`);
+    let canvas = await renderFirstPageToCanvas(pdf, pass.scale);
+    canvas = applyOcrPreprocess(canvas, pass.threshold);
+    const { data } = await window.Tesseract.recognize(canvas, "jpn+eng", {
+      logger: (msg) => {
+        if (msg.status === "recognizing text") {
+          const progress = Math.round((msg.progress || 0) * 100);
+          setStatus(`OCR中（${pass.label}）... ${progress}%`);
+        }
+      },
+      tessedit_pageseg_mode: pass.psm,
+      preserve_interword_spaces: "1",
+      user_defined_dpi: "300",
+    });
+    const text = data.text || "";
+    if (text.trim().length > bestText.trim().length) {
+      bestText = text;
+    }
+    if (bestText.trim().length >= 80) {
+      break;
+    }
+  }
+  return bestText;
 }
 
 async function handleExtract() {
