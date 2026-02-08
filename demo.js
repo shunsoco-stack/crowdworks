@@ -64,8 +64,15 @@ const OUTPUT_FIELDS = [
   { label: "元ファイル", key: "source" },
 ];
 
-function setStatus(message) {
+function setStatus(message, variant = "info") {
   statusEl.textContent = message;
+  statusEl.classList.remove("error", "success");
+  if (variant === "error") {
+    statusEl.classList.add("error");
+  }
+  if (variant === "success") {
+    statusEl.classList.add("success");
+  }
 }
 
 function normalizeDate(value) {
@@ -213,7 +220,11 @@ async function readPdfText(file) {
 async function handleExtract() {
   const file = pdfInput.files[0];
   if (!file) {
-    setStatus("PDFを選択してください。");
+    setStatus("PDFを選択してください。", "error");
+    return;
+  }
+  if (!window.pdfjsLib) {
+    setStatus("PDF読み取りライブラリの読み込みに失敗しました。", "error");
     return;
   }
 
@@ -230,10 +241,14 @@ async function handleExtract() {
     } else {
       missingFieldsEl.textContent = "すべての項目を抽出しました。";
     }
-    setStatus("抽出完了");
+    if (!text.trim()) {
+      setStatus("テキストを抽出できませんでした（画像PDFの可能性）。", "error");
+    } else {
+      setStatus("抽出完了", "success");
+    }
   } catch (error) {
     console.error(error);
-    setStatus("抽出に失敗しました。PDF形式をご確認ください。");
+    setStatus(buildErrorMessage(error), "error");
   } finally {
     extractButton.disabled = false;
   }
@@ -258,17 +273,38 @@ function downloadCsv() {
 
 async function copyCsv() {
   if (!currentRecord) {
-    setStatus("先にPDFを抽出してください。");
+    setStatus("先にPDFを抽出してください。", "error");
     return;
   }
   const csvContent = buildCsv(currentRecord).replace(/^\uFEFF/, "");
   try {
     await navigator.clipboard.writeText(csvContent);
-    setStatus("CSVをクリップボードにコピーしました。");
+    setStatus("CSVをクリップボードにコピーしました。", "success");
   } catch (error) {
     console.error(error);
-    setStatus("コピーに失敗しました。");
+    setStatus("コピーに失敗しました。", "error");
   }
+}
+
+function buildErrorMessage(error) {
+  const name = error?.name || "";
+  const message = error?.message || "";
+  if (name === "PasswordException") {
+    return "パスワード付きPDFは未対応です。";
+  }
+  if (name === "InvalidPDFException") {
+    return "PDFが壊れているか、PDFとして認識できません。";
+  }
+  if (name === "MissingPDFException") {
+    return "PDFファイルが見つかりませんでした。";
+  }
+  if (!window.pdfjsLib) {
+    return "PDF読み取りライブラリの読み込みに失敗しました。";
+  }
+  if (message) {
+    return `抽出に失敗しました: ${message}`;
+  }
+  return "抽出に失敗しました。PDF形式をご確認ください。";
 }
 
 if (window.pdfjsLib) {

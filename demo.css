@@ -112,6 +112,14 @@ body {
   font-weight: 600;
 }
 
+.status.error {
+  color: #d0472f;
+}
+
+.status.success {
+  color: #1a7f37;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
