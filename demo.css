@@ -147,14 +147,22 @@ body {
   margin-bottom: 24px;
 }
 
+.results-grid {
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: start;
+}
+
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
+  table-layout: auto;
 }
 
 th,
@@ -163,6 +171,8 @@ td {
   padding: 10px 8px;
   text-align: left;
   font-size: 0.95rem;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 th {
@@ -212,6 +222,10 @@ textarea {
 
 @media (max-width: 900px) {
   .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .results-grid {
     grid-template-columns: 1fr;
   }
 }
