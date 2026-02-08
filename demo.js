@@ -43,6 +43,21 @@ const TESSERACT_SOURCES = [
   "https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js",
 ];
 
+const TESSDATA_SOURCES = [
+  {
+    label: "jsDelivr",
+    langPath: "https://cdn.jsdelivr.net/npm/@tesseract.js-data/jpn/4.0.0_best",
+  },
+  {
+    label: "unpkg",
+    langPath: "https://unpkg.com/@tesseract.js-data/jpn/4.0.0_best",
+  },
+  {
+    label: "projectnaptha",
+    langPath: "https://tessdata.projectnaptha.com/4.0.0",
+  },
+];
+
 const FIELD_CONFIG = [
   {
     label: "請求書番号",
@@ -391,29 +406,41 @@ function applyOcrPreprocess(canvas, threshold) {
 async function runOcr(pdf) {
   await ensureTesseract();
   let bestText = "";
-  for (let i = 0; i < OCR_PASSES.length; i += 1) {
-    const pass = OCR_PASSES[i];
-    setStatus(`OCR中（${pass.label}）...`);
-    let canvas = await renderFirstPageToCanvas(pdf, pass.scale);
-    canvas = applyOcrPreprocess(canvas, pass.threshold);
-    const { data } = await window.Tesseract.recognize(canvas, "jpn+eng", {
-      logger: (msg) => {
-        if (msg.status === "recognizing text") {
-          const progress = Math.round((msg.progress || 0) * 100);
-          setStatus(`OCR中（${pass.label}）... ${progress}%`);
+  let hadLangError = false;
+  for (const source of TESSDATA_SOURCES) {
+    try {
+      for (let i = 0; i < OCR_PASSES.length; i += 1) {
+        const pass = OCR_PASSES[i];
+        setStatus(`OCR中（${source.label}/${pass.label}）...`);
+        let canvas = await renderFirstPageToCanvas(pdf, pass.scale);
+        canvas = applyOcrPreprocess(canvas, pass.threshold);
+        const { data } = await window.Tesseract.recognize(canvas, "jpn", {
+          logger: (msg) => {
+            if (msg.status === "recognizing text") {
+              const progress = Math.round((msg.progress || 0) * 100);
+              setStatus(`OCR中（${source.label}/${pass.label}）... ${progress}%`);
+            }
+          },
+          tessedit_pageseg_mode: pass.psm,
+          preserve_interword_spaces: "1",
+          user_defined_dpi: "300",
+          langPath: source.langPath,
+        });
+        const text = data.text || "";
+        if (text.trim().length > bestText.trim().length) {
+          bestText = text;
         }
-      },
-      tessedit_pageseg_mode: pass.psm,
-      preserve_interword_spaces: "1",
-      user_defined_dpi: "300",
-    });
-    const text = data.text || "";
-    if (text.trim().length > bestText.trim().length) {
-      bestText = text;
+        if (bestText.trim().length >= 80) {
+          return bestText;
+        }
+      }
+    } catch (error) {
+      hadLangError = true;
+      console.warn(error);
     }
-    if (bestText.trim().length >= 80) {
-      break;
-    }
+  }
+  if (hadLangError && !bestText.trim()) {
+    throw new Error("TESSDATA_LOAD_FAILED");
   }
   return bestText;
 }
@@ -518,6 +545,9 @@ function buildErrorMessage(error) {
   }
   if (error?.message === "TESSERACT_LOAD_FAILED") {
     return "OCRライブラリの読み込みに失敗しました。ネットワーク制限をご確認ください。";
+  }
+  if (error?.message === "TESSDATA_LOAD_FAILED") {
+    return "OCRの言語データ取得に失敗しました。ネットワーク制限をご確認ください。";
   }
   if (message) {
     return `抽出に失敗しました: ${message}`;
