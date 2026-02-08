@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>業務自動化ラボ | PDF・CSVの自動化</title>
+    <meta
+      name="description"
+      content="PDFやCSVの手入力を減らす業務自動化ツールを制作。GAS/Pythonでスプレッドシート連携まで対応します。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="logo" href="#top">業務自動化ラボ</a>
+        <nav class="nav">
+          <a href="#services">できること</a>
+          <a href="#works">実績</a>
+          <a href="#process">進め方</a>
+          <a href="#faq">FAQ</a>
+          <a class="button small" href="#contact">相談する</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container hero-inner">
+          <div class="hero-text">
+            <p class="eyebrow">業務効率化・自動化ツール制作</p>
+            <h1>手入力を減らす仕組みを、最短で形にします</h1>
+            <p class="lead">
+              PDF→Excel/スプレッドシート、CSV整形、定型作業の自動化が得意です。
+              小さな自動化から運用まで、現場に合わせて丁寧に設計します。
+            </p>
+            <div class="hero-actions">
+              <a class="button" href="#contact">無料で相談する</a>
+              <a class="button ghost" href="#works">サンプルを見る</a>
+            </div>
+            <ul class="hero-tags">
+              <li>初回ヒアリング無料</li>
+              <li>小規模案件歓迎</li>
+              <li>継続運用を前提に設計</li>
+            </ul>
+          </div>
+          <div class="hero-card">
+            <div class="card">
+              <h3>対応イメージ</h3>
+              <p>PDF請求書 → 必要項目抽出 → CSV/シート出力</p>
+              <div class="stat">
+                <span class="stat-label">手入力の時間</span>
+                <span class="stat-value">月15分 → 1分</span>
+              </div>
+              <p class="note">※改善幅は業務内容により変動します</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pain">
+        <div class="container">
+          <div class="section-title">
+            <h2>こんな作業、ありませんか？</h2>
+            <p>毎月の定型作業ほど、自動化すると効果が大きいです。</p>
+          </div>
+          <div class="grid three">
+            <div class="card">
+              <h3>請求書の手入力</h3>
+              <p>PDFの項目をExcelへ転記するだけで時間がかかる。</p>
+            </div>
+            <div class="card">
+              <h3>CSV集計の手作業</h3>
+              <p>フォーマットが毎回違い、整形に追われる。</p>
+            </div>
+            <div class="card">
+              <h3>同じ作業の繰り返し</h3>
+              <p>月次・週次の作業をもっと効率化したい。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section alt" id="services">
+        <div class="container">
+          <div class="section-title">
+            <h2>できること</h2>
+            <p>必要な部分だけ自動化する、小さな改善から対応します。</p>
+          </div>
+          <div class="grid three">
+            <div class="card">
+              <h3>PDF抽出 → CSV/シート出力</h3>
+              <p>請求書・明細書などの必要項目を抽出し、表形式で出力します。</p>
+            </div>
+            <div class="card">
+              <h3>CSV整形・集計レポート</h3>
+              <p>バラバラのCSVを整形し、月次レポートまで自動化します。</p>
+            </div>
+            <div class="card">
+              <h3>OCRで画像PDF対応</h3>
+              <p>スキャンされたPDFもOCRで読み取り、必要項目を抽出します。</p>
+            </div>
+          </div>
+          <div class="chip-row">
+            <span class="chip">GAS</span>
+            <span class="chip">Python</span>
+            <span class="chip">Googleスプレッドシート</span>
+            <span class="chip">Excel</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="strengths">
+        <div class="container">
+          <div class="section-title">
+            <h2>選ばれる理由</h2>
+            <p>「現場で使えるか」を重視して設計します。</p>
+          </div>
+          <div class="grid three">
+            <div class="card">
+              <h3>小さく始められる</h3>
+              <p>全部自動化しなくても、効果のある部分から着手できます。</p>
+            </div>
+            <div class="card">
+              <h3>運用に合わせて調整</h3>
+              <p>項目の増減や配置変更に対応できる仕組みを用意します。</p>
+            </div>
+            <div class="card">
+              <h3>継続運用を前提</h3>
+              <p>毎月の運用を想定し、簡単に使える導線を設計します。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section alt" id="works">
+        <div class="container">
+          <div class="section-title">
+            <h2>実績（サンプル）</h2>
+            <p>公開可能な範囲で、代表的なサンプルを掲載しています。</p>
+          </div>
+          <div class="grid three">
+            <article class="card work-card">
+              <span class="badge">サンプル</span>
+              <h3>請求書PDF → Excel自動転記</h3>
+              <p>請求日・取引先・金額を抽出し、CSV/シートに自動出力。</p>
+              <ul>
+                <li>抽出対象：請求日 / 請求番号 / 合計金額</li>
+                <li>形式揺れに対応できる抽出ルール</li>
+              </ul>
+            </article>
+            <article class="card work-card">
+              <span class="badge">サンプル</span>
+              <h3>売上CSVの自動集計レポート</h3>
+              <p>CSV取り込み〜整形〜月次レポート作成を一括自動化。</p>
+              <ul>
+                <li>複数フォーマットのCSVに対応</li>
+                <li>集計・グラフ作成まで自動化</li>
+              </ul>
+            </article>
+            <article class="card work-card">
+              <span class="badge">サンプル</span>
+              <h3>スキャンPDFのOCR抽出</h3>
+              <p>画像PDFから数値を読み取り、スプレッドシートに反映。</p>
+              <ul>
+                <li>OCR精度を高める前処理</li>
+                <li>誤読チェック用の確認欄</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="process">
+        <div class="container">
+          <div class="section-title">
+            <h2>進め方</h2>
+            <p>最小限のやり取りで、早く形にします。</p>
+          </div>
+          <ol class="steps">
+            <li>
+              <h3>相談</h3>
+              <p>現状の課題とゴールを簡潔にヒアリングします。</p>
+            </li>
+            <li>
+              <h3>仕様確認</h3>
+              <p>抽出項目や出力形式を整理し、対応範囲を決めます。</p>
+            </li>
+            <li>
+              <h3>初稿</h3>
+              <p>まず動く雛形を作成し、実データで微調整します。</p>
+            </li>
+            <li>
+              <h3>調整・納品</h3>
+              <p>運用に合わせた調整後、簡易マニュアルと一緒に納品します。</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section alt" id="faq">
+        <div class="container">
+          <div class="section-title">
+            <h2>よくある質問</h2>
+            <p>不明点はお気軽にご相談ください。</p>
+          </div>
+          <div class="faq">
+            <details class="card" open>
+              <summary>サンプルPDFがなくても相談できますか？</summary>
+              <p>
+                可能です。まずは雛形で作成し、実データで抽出精度を調整します。
+              </p>
+            </details>
+            <details class="card">
+              <summary>Googleスプレッドシートに直接反映できますか？</summary>
+              <p>可能です。GASを使って自動更新まで対応します。</p>
+            </details>
+            <details class="card">
+              <summary>部分的な自動化でも依頼できますか？</summary>
+              <p>もちろんです。効果の大きい部分からの着手を推奨します。</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="section contact" id="contact">
+        <div class="container contact-inner">
+          <div>
+            <h2>まずはお気軽にご相談ください</h2>
+            <p>
+              相談内容が未整理でも大丈夫です。現状の困りごとをお聞かせください。
+            </p>
+            <div class="contact-box">
+              <p class="contact-label">連絡先</p>
+              <p class="contact-value">contact@example.com</p>
+              <p class="note">※実際のメールアドレスに差し替えてください。</p>
+            </div>
+          </div>
+          <div class="card contact-card">
+            <h3>相談のヒント</h3>
+            <ul>
+              <li>対象となるファイル種類（PDF/CSV）</li>
+              <li>抽出したい項目</li>
+              <li>出力形式（CSV/シート）</li>
+              <li>使用環境（Google/Excel等）</li>
+            </ul>
+            <a class="button full" href="mailto:contact@example.com">メールで相談する</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>© 2026 業務自動化ラボ</p>
+        <p class="muted">業務効率化・自動化ツール制作</p>
+      </div>
+    </footer>
+  </body>
+</html>
