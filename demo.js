@@ -11,6 +11,7 @@ const ocrToggle = document.getElementById("ocrToggle");
 let currentRecord = null;
 let pdfjsReadyPromise = null;
 let tesseractReadyPromise = null;
+let pdfSupportPromise = null;
 const OCR_PASSES = [
   { label: "標準", scale: 3.0, threshold: null, psm: "3" },
   { label: "高精度", scale: 4.0, threshold: 175, psm: "6" },
@@ -35,6 +36,31 @@ const PDFJS_SOURCES = [
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
     worker:
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+  },
+];
+
+const PDFJS_SUPPORT_SOURCES = [
+  {
+    label: "local",
+    cMapUrl: "./vendor/cmaps/",
+    standardFontDataUrl: "./vendor/standard_fonts/",
+    probe: "./vendor/cmaps/Adobe-Japan1-0.bcmap",
+  },
+  {
+    label: "jsDelivr",
+    cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
+    standardFontDataUrl:
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/",
+    probe:
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/Adobe-Japan1-0.bcmap",
+  },
+  {
+    label: "unpkg",
+    cMapUrl: "https://unpkg.com/pdfjs-dist@3.11.174/cmaps/",
+    standardFontDataUrl:
+      "https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/",
+    probe:
+      "https://unpkg.com/pdfjs-dist@3.11.174/cmaps/Adobe-Japan1-0.bcmap",
   },
 ];
 
@@ -268,6 +294,30 @@ async function ensurePdfJs() {
   return pdfjsReadyPromise;
 }
 
+async function resolvePdfSupportSource() {
+  if (pdfSupportPromise) {
+    return pdfSupportPromise;
+  }
+  pdfSupportPromise = (async () => {
+    for (const source of PDFJS_SUPPORT_SOURCES) {
+      try {
+        const response = await fetch(source.probe, { method: "GET" });
+        if (response.ok) {
+          return {
+            cMapUrl: source.cMapUrl,
+            cMapPacked: true,
+            standardFontDataUrl: source.standardFontDataUrl,
+          };
+        }
+      } catch (error) {
+        console.warn(`PDF support source failed: ${source.label}`, error);
+      }
+    }
+    return null;
+  })();
+  return pdfSupportPromise;
+}
+
 function extractFields(text, sourceName) {
   const record = {};
   const missing = [];
@@ -361,7 +411,9 @@ async function extractPageText(page) {
 
 async function readPdfText(file) {
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const support = await resolvePdfSupportSource();
+  const params = support ? { data: arrayBuffer, ...support } : { data: arrayBuffer };
+  const pdf = await pdfjsLib.getDocument(params).promise;
   const pagesText = [];
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
     const page = await pdf.getPage(pageNum);
@@ -371,7 +423,7 @@ async function readPdfText(file) {
   return { text: pagesText.join("\n"), pdf };
 }
 
-async function renderFirstPageToCanvas(pdf, scale = OCR_SETTINGS.scale) {
+async function renderFirstPageToCanvas(pdf, scale = OCR_PASSES[0].scale) {
   const page = await pdf.getPage(1);
   const viewport = page.getViewport({ scale });
   const canvas = document.createElement("canvas");
