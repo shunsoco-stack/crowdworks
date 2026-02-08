@@ -16,25 +16,19 @@ const PDFJS_SOURCES = [
     worker: "./vendor/pdf.worker.min.js",
   },
   {
-    script:
-      "https://raw.githubusercontent.com/mozilla/pdf.js/v4.2.67/build/pdf.min.js",
+    script: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js",
     worker:
-      "https://raw.githubusercontent.com/mozilla/pdf.js/v4.2.67/build/pdf.worker.min.js",
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js",
+  },
+  {
+    script: "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js",
+    worker: "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js",
   },
   {
     script:
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
     worker:
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js",
-  },
-  {
-    script: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js",
-    worker:
-      "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js",
-  },
-  {
-    script: "https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.min.js",
-    worker: "https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.worker.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
   },
 ];
 
