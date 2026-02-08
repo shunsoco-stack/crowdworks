@@ -11,6 +11,10 @@ const ocrToggle = document.getElementById("ocrToggle");
 let currentRecord = null;
 let pdfjsReadyPromise = null;
 let tesseractReadyPromise = null;
+const OCR_SETTINGS = {
+  scale: 3.0,
+  threshold: 175,
+};
 
 const PDFJS_SOURCES = [
   {
@@ -352,9 +356,9 @@ async function readPdfText(file) {
   return { text: pagesText.join("\n"), pdf };
 }
 
-async function renderFirstPageToCanvas(pdf) {
+async function renderFirstPageToCanvas(pdf, scale = OCR_SETTINGS.scale) {
   const page = await pdf.getPage(1);
-  const viewport = page.getViewport({ scale: 2.0 });
+  const viewport = page.getViewport({ scale });
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   canvas.width = viewport.width;
@@ -363,9 +367,28 @@ async function renderFirstPageToCanvas(pdf) {
   return canvas;
 }
 
+function applyOcrPreprocess(canvas) {
+  const context = canvas.getContext("2d");
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    const value = luminance > OCR_SETTINGS.threshold ? 255 : 0;
+    data[i] = value;
+    data[i + 1] = value;
+    data[i + 2] = value;
+  }
+  context.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
 async function runOcr(pdf) {
   await ensureTesseract();
-  const canvas = await renderFirstPageToCanvas(pdf);
+  let canvas = await renderFirstPageToCanvas(pdf);
+  canvas = applyOcrPreprocess(canvas);
   const { data } = await window.Tesseract.recognize(canvas, "jpn+eng", {
     logger: (msg) => {
       if (msg.status === "recognizing text") {
@@ -375,6 +398,8 @@ async function runOcr(pdf) {
         setStatus(`OCR準備中...`);
       }
     },
+    tessedit_pageseg_mode: "6",
+    preserve_interword_spaces: "1",
   });
   return data.text || "";
 }
@@ -412,8 +437,13 @@ async function handleExtract() {
     } else {
       missingFieldsEl.textContent = "すべての項目を抽出しました。";
     }
-    if (!finalText.trim()) {
+    if (!normalizedText.trim()) {
       setStatus("テキストを抽出できませんでした。", "error");
+    } else if (normalizedText.trim().length < 20) {
+      setStatus(
+        "OCR結果が少なすぎます。画像の解像度や文字サイズをご確認ください。",
+        "error"
+      );
     } else {
       setStatus("抽出完了", "success");
     }
