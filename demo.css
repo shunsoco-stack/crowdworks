@@ -97,6 +97,12 @@ body {
   font-size: 0.95rem;
 }
 
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .toggle input {
   width: 18px;
   height: 18px;

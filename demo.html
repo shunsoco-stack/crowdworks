@@ -31,15 +31,21 @@
         <h2>1. PDFをアップロード</h2>
         <p class="muted">PDFはこのブラウザ内で処理されます。</p>
         <div class="uploader">
-          <input id="pdfInput" type="file" accept="application/pdf" />
+          <input id="pdfInput" type="file" accept="application/pdf" multiple />
           <button id="extractButton" class="button" type="button">
             抽出する
           </button>
         </div>
-        <label class="toggle">
-          <input id="ocrToggle" type="checkbox" checked />
-          画像PDFはOCRで抽出（1ページ目・時間がかかる場合あり）
-        </label>
+        <div class="toggle-group">
+          <label class="toggle">
+            <input id="ocrToggle" type="checkbox" checked />
+            画像PDFはOCRで抽出（1ページ目・時間がかかる場合あり）
+          </label>
+          <label class="toggle">
+            <input id="allPagesToggle" type="checkbox" checked />
+            全ページを対象（テキストPDFのみ）
+          </label>
+        </div>
         <p class="note">
           OCRは外部ライブラリを使用します。ネットワーク制限がある場合は動作しないことがあります。
         </p>
@@ -48,24 +54,19 @@
 
       <section class="grid">
         <div class="card">
-          <h2>2. 抽出結果</h2>
+          <h2>2. 抽出結果（一覧）</h2>
           <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>項目</th>
-                  <th>値</th>
-                </tr>
-              </thead>
+            <table id="batchTable">
+              <thead id="batchHead"></thead>
               <tbody id="resultBody"></tbody>
             </table>
           </div>
           <div class="actions">
             <button id="downloadCsv" class="button ghost" type="button">
-              CSVをダウンロード
+              一覧CSVをダウンロード
             </button>
             <button id="copyCsv" class="button ghost" type="button">
-              CSVをコピー
+              一覧CSVをコピー
             </button>
           </div>
           <p id="missingFields" class="note"></p>
@@ -76,7 +77,7 @@
           <textarea
             id="textPreview"
             rows="14"
-            placeholder="PDFを読み取るとここにテキストが表示されます。"
+            placeholder="最後に処理したPDFのテキストが表示されます。"
           ></textarea>
           <p class="note">
             抽出できない項目がある場合は、テキストの表記を確認します。

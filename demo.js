@@ -2,13 +2,16 @@ const pdfInput = document.getElementById("pdfInput");
 const extractButton = document.getElementById("extractButton");
 const statusEl = document.getElementById("status");
 const resultBody = document.getElementById("resultBody");
+const batchHead = document.getElementById("batchHead");
 const missingFieldsEl = document.getElementById("missingFields");
 const textPreview = document.getElementById("textPreview");
 const downloadCsvButton = document.getElementById("downloadCsv");
 const copyCsvButton = document.getElementById("copyCsv");
 const ocrToggle = document.getElementById("ocrToggle");
+const allPagesToggle = document.getElementById("allPagesToggle");
 
 let currentRecord = null;
+let currentResults = [];
 let pdfjsReadyPromise = null;
 let tesseractReadyPromise = null;
 let pdfSupportPromise = null;
@@ -148,6 +151,14 @@ const OUTPUT_FIELDS = [
   ...FIELD_CONFIG.map((field) => ({ label: field.label, key: field.key })),
   { label: "通貨", key: "currency" },
   { label: "元ファイル", key: "source" },
+];
+
+const BATCH_FIELDS = [
+  { label: "元ファイル", key: "source" },
+  { label: "ステータス", key: "status" },
+  { label: "未抽出", key: "missing" },
+  ...FIELD_CONFIG.map((field) => ({ label: field.label, key: field.key })),
+  { label: "通貨", key: "currency" },
 ];
 
 function setStatus(message, variant = "info") {
@@ -356,25 +367,37 @@ function extractFields(text, sourceName) {
 }
 
 function renderResult(record) {
-  resultBody.innerHTML = "";
-  OUTPUT_FIELDS.forEach((field) => {
-    const row = document.createElement("tr");
-    const labelCell = document.createElement("td");
-    const valueCell = document.createElement("td");
-    labelCell.textContent = field.label;
-    valueCell.textContent = record[field.key] || "";
-    row.appendChild(labelCell);
-    row.appendChild(valueCell);
-    resultBody.appendChild(row);
+  const row = document.createElement("tr");
+  BATCH_FIELDS.forEach((field) => {
+    const cell = document.createElement("td");
+    cell.textContent = record[field.key] || "";
+    row.appendChild(cell);
   });
+  resultBody.appendChild(row);
 }
 
-function buildCsv(record) {
-  const headers = OUTPUT_FIELDS.map((field) => field.label);
-  const values = OUTPUT_FIELDS.map((field) => record[field.key] || "");
+function initBatchTable() {
+  if (!batchHead) {
+    return;
+  }
+  batchHead.innerHTML = "";
+  const row = document.createElement("tr");
+  BATCH_FIELDS.forEach((field) => {
+    const th = document.createElement("th");
+    th.textContent = field.label;
+    row.appendChild(th);
+  });
+  batchHead.appendChild(row);
+}
 
-  const escapeCsv = (value) => `"${String(value).replace(/"/g, '""')}"`;
-  const lines = [headers.map(escapeCsv).join(","), values.map(escapeCsv).join(",")];
+function buildCsv(records) {
+  const headers = BATCH_FIELDS.map((field) => field.label);
+  const escapeCsv = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const lines = [headers.map(escapeCsv).join(",")];
+  records.forEach((record) => {
+    const values = BATCH_FIELDS.map((field) => record[field.key] || "");
+    lines.push(values.map(escapeCsv).join(","));
+  });
   return `\uFEFF${lines.join("\r\n")}`;
 }
 
@@ -409,13 +432,14 @@ async function extractPageText(page) {
   return lines.join("\n");
 }
 
-async function readPdfText(file) {
+async function readPdfText(file, allPages) {
   const arrayBuffer = await file.arrayBuffer();
   const support = await resolvePdfSupportSource();
   const params = support ? { data: arrayBuffer, ...support } : { data: arrayBuffer };
   const pdf = await pdfjsLib.getDocument(params).promise;
   const pagesText = [];
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
+  const maxPages = allPages ? pdf.numPages : 1;
+  for (let pageNum = 1; pageNum <= maxPages; pageNum += 1) {
     const page = await pdf.getPage(pageNum);
     const pageText = await extractPageText(page);
     pagesText.push(pageText);
@@ -498,8 +522,8 @@ async function runOcr(pdf) {
 }
 
 async function handleExtract() {
-  const file = pdfInput.files[0];
-  if (!file) {
+  const files = Array.from(pdfInput.files || []);
+  if (!files.length) {
     setStatus("PDFを選択してください。", "error");
     return;
   }
@@ -508,38 +532,53 @@ async function handleExtract() {
   extractButton.disabled = true;
   try {
     await ensurePdfJs();
-    setStatus("読み込み中...");
-    const { text, pdf } = await readPdfText(file);
-    let finalText = text;
-    if (!finalText.trim()) {
-      if (ocrToggle.checked) {
-        setStatus("画像PDFの可能性があります。OCRを開始します。");
-        finalText = await runOcr(pdf);
-      } else {
-        setStatus("テキストを抽出できませんでした（画像PDFの可能性）。", "error");
+    resultBody.innerHTML = "";
+    initBatchTable();
+    currentResults = [];
+
+    const allPages = allPagesToggle?.checked ?? true;
+    for (let i = 0; i < files.length; i += 1) {
+      const file = files[i];
+      setStatus(`処理中 (${i + 1}/${files.length}): ${file.name}`);
+
+      const { text, pdf } = await readPdfText(file, allPages);
+      let finalText = text;
+      let ocrUsed = false;
+      if (!finalText.trim()) {
+        if (ocrToggle.checked) {
+          setStatus(`OCR開始: ${file.name}`);
+          finalText = await runOcr(pdf);
+          ocrUsed = true;
+        }
       }
+
+      const normalizedText = normalizeOcrText(finalText);
+      textPreview.value = normalizedText;
+      const { record, missing } = extractFields(normalizedText, file.name);
+      const missingText = missing.length ? missing.join(" / ") : "-";
+      const status =
+        !normalizedText.trim()
+          ? "テキスト抽出不可"
+          : normalizedText.trim().length < 20
+          ? "OCR結果が少ない"
+          : missing.length
+          ? "一部未抽出"
+          : "OK";
+
+      const outputRecord = {
+        ...record,
+        status: ocrUsed ? `${status}（OCR）` : status,
+        missing: missingText,
+        source: file.name,
+      };
+
+      currentRecord = outputRecord;
+      currentResults.push(outputRecord);
+      renderResult(outputRecord);
+      missingFieldsEl.textContent = `最後の処理結果: ${outputRecord.status}`;
     }
-    textPreview.value = finalText;
-    const normalizedText = normalizeOcrText(finalText);
-    textPreview.value = normalizedText;
-    const { record, missing } = extractFields(normalizedText, file.name);
-    currentRecord = record;
-    renderResult(record);
-    if (missing.length) {
-      missingFieldsEl.textContent = `未抽出: ${missing.join(" / ")}`;
-    } else {
-      missingFieldsEl.textContent = "すべての項目を抽出しました。";
-    }
-    if (!normalizedText.trim()) {
-      setStatus("テキストを抽出できませんでした。", "error");
-    } else if (normalizedText.trim().length < 20) {
-      setStatus(
-        "OCR結果が少なすぎます。画像の解像度や文字サイズをご確認ください。",
-        "error"
-      );
-    } else {
-      setStatus("抽出完了", "success");
-    }
+
+    setStatus(`抽出完了 (${currentResults.length}件)`, "success");
   } catch (error) {
     console.error(error);
     setStatus(buildErrorMessage(error), "error");
@@ -549,16 +588,16 @@ async function handleExtract() {
 }
 
 function downloadCsv() {
-  if (!currentRecord) {
-    setStatus("先にPDFを抽出してください。");
+  if (!currentResults.length) {
+    setStatus("先にPDFを抽出してください。", "error");
     return;
   }
-  const csvContent = buildCsv(currentRecord);
+  const csvContent = buildCsv(currentResults);
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "invoice_extract.csv";
+  link.download = "invoice_extract_batch.csv";
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -566,11 +605,11 @@ function downloadCsv() {
 }
 
 async function copyCsv() {
-  if (!currentRecord) {
+  if (!currentResults.length) {
     setStatus("先にPDFを抽出してください。", "error");
     return;
   }
-  const csvContent = buildCsv(currentRecord).replace(/^\uFEFF/, "");
+  const csvContent = buildCsv(currentResults).replace(/^\uFEFF/, "");
   try {
     await navigator.clipboard.writeText(csvContent);
     setStatus("CSVをクリップボードにコピーしました。", "success");
